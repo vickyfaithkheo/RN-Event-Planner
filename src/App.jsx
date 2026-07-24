@@ -71,7 +71,7 @@ export default function EventBudgetGenerator() {
     },
     {
       id: uid(),
-      projectName: "", // Replicates first row if empty
+      projectName: "", 
       vendor: "PrintPress Solutions/1998221B",
       invoiceNo: "PP-1042",
       date: "15/10/2024",
@@ -107,13 +107,16 @@ export default function EventBudgetGenerator() {
   const net = totalIncome - totalExpenditure;
   const isDeficit = net < 0;
 
-  // Calculations for Claims
-  const claimsSubtotal = useMemo(
-    () => claims.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0),
+  // Calculations for Claims Group Subtotals
+  const activityExpensesTotal = useMemo(
+    () => claims.filter(c => c.accountGroup === "Activity_Expenses").reduce((s, r) => s + (parseFloat(r.amount) || 0), 0),
     [claims]
   );
-  const claimsTax = claimsSubtotal * 0.09;
-  const claimsTotal = claimsSubtotal + claimsTax;
+  const adminExpensesTotal = useMemo(
+    () => claims.filter(c => c.accountGroup === "Administrative_Expenses").reduce((s, r) => s + (parseFloat(r.amount) || 0), 0),
+    [claims]
+  );
+  const claimsGrandTotal = activityExpensesTotal + adminExpensesTotal;
 
   const updateRow = (setter, id, field, value) =>
     setter((rows) => rows.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
@@ -122,7 +125,6 @@ export default function EventBudgetGenerator() {
   const removeRow = (setter, id) =>
     setter((rows) => rows.filter((r) => r.id !== id));
 
-  // Claim specific handlers
   const addClaimRow = () =>
     setClaims((rows) => [
       ...rows,
@@ -160,11 +162,10 @@ export default function EventBudgetGenerator() {
         push([index + 1, pName, c.vendor, c.invoiceNo, c.date, c.itemDetails, c.accountGroup, c.accountDesc, parseFloat(c.amount) || 0]);
       });
       push([]);
-      push(["SUBTOTAL", "", "", "", "", "", "", "", claimsSubtotal]);
-      push(["TAX (GST 9%)", "", "", "", "", "", "", "", claimsTax]);
-      push(["TOTAL CLAIM AMOUNT", "", "", "", "", "", "", "", claimsTotal]);
+      push(["Activity_Expenses Subtotal", "", "", "", "", "", "", "", activityExpensesTotal]);
+      push(["Administrative_Expenses Subtotal", "", "", "", "", "", "", "", adminExpensesTotal]);
+      push(["TOTAL CLAIM AMOUNT", "", "", "", "", "", "", "", claimsGrandTotal]);
     } else {
-      // INCOME TABLE
       push(["INCOME", "", "Unit Price", "Qty", "", "Total S$"]);
       const incomeStart = rows.length + 1;
       income.forEach((r) => {
@@ -183,7 +184,6 @@ export default function EventBudgetGenerator() {
       
       push([]);
       
-      // EXPENDITURE TABLE
       push(["EXPENDITURE", "", "Unit Price", "Qty", "", "Total S$"]);
       const expStart = rows.length + 1;
       expenditure.forEach((r) => {
@@ -202,7 +202,6 @@ export default function EventBudgetGenerator() {
       
       push([]);
       
-      // SURPLUS / DEFICIT
       push([
         "SURPLUS / (DEFICIT)", "", "", "", "",
         { t: "n", f: `F${totalIncomeRow}-F${totalExpRow}` },
@@ -229,7 +228,7 @@ export default function EventBudgetGenerator() {
     const ws = XLSX.utils.aoa_to_sheet(rows);
     
     ws["!cols"] = [
-      { wch: 30 }, { wch: 18 }, { wch: 22 }, { wch: 15 }, { wch: 12 }, { wch: 30 }, { wch: 22 }, { wch: 25 }, { wch: 16 },
+      { wch: 30 }, { wch: 18 }, { wch: 22 }, { wch: 15 }, { wch: 12 }, { wch: 30 }, { wch: 22 }, { wch: 25 }, { wch: 18 },
     ];
     
     ws["!merges"] = [
@@ -368,7 +367,6 @@ export default function EventBudgetGenerator() {
         <main className="flex-1 overflow-y-auto p-8 bg-[#f7f9fb]">
           <div className="max-w-[1440px] mx-auto space-y-6 pb-10">
             
-            {/* CONDITIONAL RENDERING BASED ON ACTIVE TAB */}
             {activeNav === "Claim Details" ? (
               
               /* ---------------- CLAIM DETAILS TAB VIEW ---------------- */
@@ -405,7 +403,7 @@ export default function EventBudgetGenerator() {
                           <th className="px-3 py-3 uppercase tracking-wider min-w-[220px]">Item Details</th>
                           <th className="px-3 py-3 uppercase tracking-wider min-w-[170px]">Account Group</th>
                           <th className="px-3 py-3 uppercase tracking-wider min-w-[200px]">Account Description</th>
-                          <th className="px-3 py-3 uppercase tracking-wider text-right w-28">Amount ($)</th>
+                          <th className="px-3 py-3 uppercase tracking-wider text-right w-36">Amount ($)</th>
                           <th className="w-10"></th>
                         </tr>
                       </thead>
@@ -461,8 +459,8 @@ export default function EventBudgetGenerator() {
                               </td>
                               <td className="px-3 py-3">
                                 <textarea 
-                                  rows="1" 
-                                  className="w-full bg-transparent border-none p-1 text-sm focus:bg-white rounded resize-none" 
+                                  rows="2" 
+                                  className="w-full bg-transparent border-none p-1 text-sm focus:bg-white rounded resize-none min-h-[48px]" 
                                   value={c.itemDetails} 
                                   onChange={(e) => updateRow(setClaims, c.id, "itemDetails", e.target.value)} 
                                   placeholder="Describe items..." 
@@ -513,24 +511,24 @@ export default function EventBudgetGenerator() {
                     </table>
                   </div>
 
-                  {/* Table Footer / Totals */}
+                  {/* Table Footer / Group Subtotals */}
                   <div className="p-6 bg-[#f2f4f6]/50 border-t border-[#c6c6cd] flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <button onClick={addClaimRow} className="flex items-center gap-2 text-[#0058be] font-semibold hover:bg-[#0058be]/10 px-4 py-2 rounded transition-all cursor-pointer">
                       <span className="material-symbols-outlined">add_circle</span> Add New Row
                     </button>
                     <div className="flex flex-col items-end">
                       <div className="flex items-center gap-8 mb-2">
-                        <span className="text-xs font-bold text-[#45464d] uppercase">Subtotal</span>
-                        <span className="text-sm font-mono">${money(claimsSubtotal)}</span>
+                        <span className="text-xs font-bold text-[#45464d] uppercase">Activity_Expenses Subtotal</span>
+                        <span className="text-sm font-mono">${money(activityExpensesTotal)}</span>
                       </div>
                       <div className="flex items-center gap-8 mb-4">
-                        <span className="text-xs font-bold text-[#45464d] uppercase">Tax (GST 9%)</span>
-                        <span className="text-sm font-mono">${money(claimsTax)}</span>
+                        <span className="text-xs font-bold text-[#45464d] uppercase">Administrative_Expenses Subtotal</span>
+                        <span className="text-sm font-mono">${money(adminExpensesTotal)}</span>
                       </div>
                       <div className="flex items-center gap-12 bg-[#0058be] text-white px-8 py-4 rounded-xl shadow-lg">
                         <div>
                           <span className="text-[10px] font-bold opacity-80 block uppercase tracking-widest">Total Claim Amount</span>
-                          <span className="text-2xl font-bold font-mono">${money(claimsTotal)}</span>
+                          <span className="text-2xl font-bold font-mono">${money(claimsGrandTotal)}</span>
                         </div>
                         <span className="material-symbols-outlined text-3xl opacity-50">account_balance</span>
                       </div>
@@ -543,7 +541,6 @@ export default function EventBudgetGenerator() {
 
               /* ---------------- BUDGET & ACCOUNTS VIEWS ---------------- */
               <>
-                {/* General Info Card */}
                 <section className="bg-white border border-[#c6c6cd] rounded-lg p-6 shadow-sm">
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div>
@@ -575,7 +572,6 @@ export default function EventBudgetGenerator() {
                   </div>
                 </section>
 
-                {/* Financials Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   
                   {/* Income Section */}
@@ -732,7 +728,6 @@ export default function EventBudgetGenerator() {
 
                 </div>
 
-                {/* Bottom Section: Net Result */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   <div className={`lg:col-span-1 bg-white border-l-4 ${isDeficit ? 'border-[#ba1a1a]' : 'border-[#009668]'} border border-[#c6c6cd] rounded-lg p-6 flex flex-col justify-between shadow-sm`}>
                     <div>
@@ -747,7 +742,6 @@ export default function EventBudgetGenerator() {
                   </div>
                 </div>
 
-                {/* Preparation & Authorization Card (Full Width) */}
                 <div className="bg-white border border-[#c6c6cd] rounded-lg p-6 shadow-sm mt-6">
                   <h4 className="text-lg font-semibold mb-6 text-[#191c1e]">Preparation & Authorization</h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -835,7 +829,6 @@ export default function EventBudgetGenerator() {
               </>
             )}
 
-            {/* Footer Disclaimer */}
             <footer className="text-center pt-8">
               <p className="text-[#45464d] text-[11px] uppercase tracking-widest opacity-50">
                 Confidential Document • Internal Use Only • EventFin Pro Cloud v4.2.0
@@ -845,7 +838,6 @@ export default function EventBudgetGenerator() {
           </div>
         </main>
 
-        {/* Floating Action Button */}
         <div className="fixed bottom-10 right-10 flex flex-col items-end space-y-4">
           <button className="bg-[#0058be] text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform cursor-pointer" title="Save Draft">
             <span className="material-symbols-outlined">save</span>
@@ -857,7 +849,6 @@ export default function EventBudgetGenerator() {
   );
 }
 
-// Sidebar Button Component with Active State Styling
 function SidebarButton({ icon, label, active, onClick }) {
   return (
     <button 
