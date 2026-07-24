@@ -68,35 +68,46 @@ export default function EventBudgetGenerator() {
     push([orgName]);
     push([]);
     
+    // INCOME TABLE
     push(["INCOME", "", "Unit Price", "Qty", "", "Total S$"]);
-    const incomeStart = rows.length + 1;
+    const incomeStart = rows.length + 1; // 1-based row index for Excel formula start
     income.forEach((r) => {
       const p = parseFloat(r.price) || 0;
       const q = parseFloat(r.qty) || 0;
-      push([r.label || "", "", p, q, "", p * q]);
+      // Formula for line amount: =C(row)*D(row)
+      const currentRow = rows.length + 1;
+      push([r.label || "", "", p, q, "", { t: "n", f: `C${currentRow}*D${currentRow}` }]);
     });
-    const incomeEnd = rows.length;
+    const incomeEnd = rows.length; // 1-based row index for Excel formula end
+    
     push([
       "TOTAL INCOME", "", "", "", "",
       { t: "n", f: `SUM(F${incomeStart}:F${incomeEnd})` },
     ]);
     const totalIncomeRow = rows.length;
+    
     push([]);
     
+    // EXPENDITURE TABLE
     push(["EXPENDITURE", "", "Unit Price", "Qty", "", "Total S$"]);
     const expStart = rows.length + 1;
     expenditure.forEach((r) => {
       const p = parseFloat(r.price) || 0;
       const q = parseFloat(r.qty) || 0;
-      push([r.label || "", "", p, q, "", p * q]);
+      const currentRow = rows.length + 1;
+      push([r.label || "", "", p, q, "", { t: "n", f: `C${currentRow}*D${currentRow}` }]);
     });
     const expEnd = rows.length;
+    
     push([
       "TOTAL EXPENDITURE", "", "", "", "",
       { t: "n", f: `SUM(F${expStart}:F${expEnd})` },
     ]);
     const totalExpRow = rows.length;
+    
     push([]);
+    
+    // SURPLUS / DEFICIT
     push([
       "SURPLUS / (DEFICIT)", "", "", "", "",
       { t: "n", f: `F${totalIncomeRow}-F${totalExpRow}` },
@@ -120,16 +131,27 @@ export default function EventBudgetGenerator() {
     push(["Organization:", directorOrg]);
 
     const ws = XLSX.utils.aoa_to_sheet(rows);
+    
+    // Clean column widths for professional readability
     ws["!cols"] = [
-      { wch: 22 }, { wch: 18 }, { wch: 12 }, { wch: 10 }, { wch: 20 }, { wch: 14 },
+      { wch: 30 }, { wch: 5 }, { wch: 14 }, { wch: 10 }, { wch: 5 }, { wch: 16 },
     ];
     
+    ws["!merges"] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
+    ];
+
+    // Format currency columns (Price in Col C, Totals in Col F)
     for (let r = 0; r < rows.length; r++) {
       const addrPrice = XLSX.utils.encode_cell({ r, c: 2 });
-      if (ws[addrPrice] && typeof ws[addrPrice].v === "number") ws[addrPrice].z = "$#,##0.00;($#,##0.00)";
+      if (ws[addrPrice] && (typeof ws[addrPrice].v === "number" || ws[addrPrice].f)) {
+        ws[addrPrice].z = "$#,##0.00;($#,##0.00)";
+      }
       
       const addrTotal = XLSX.utils.encode_cell({ r, c: 5 });
-      if (ws[addrTotal] && typeof ws[addrTotal].v === "number") ws[addrTotal].z = "$#,##0.00;($#,##0.00)";
+      if (ws[addrTotal] && (typeof ws[addrTotal].v === "number" || ws[addrTotal].f)) {
+        ws[addrTotal].z = "$#,##0.00;($#,##0.00)";
+      }
     }
 
     const wb = XLSX.utils.book_new();
