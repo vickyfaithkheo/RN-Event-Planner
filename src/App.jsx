@@ -10,6 +10,7 @@ const money = (n) =>
   });
 
 export default function EventBudgetGenerator() {
+  const [activeNav, setActiveNav] = useState("Accounts"); // "Budgets" or "Accounts"
   const [docType, setDocType] = useState("Proposed Budget");
   const [orgName, setOrgName] = useState("Tampines Greencourt RN");
   const [eventName, setEventName] = useState("Visit to Snail Farm");
@@ -61,7 +62,9 @@ export default function EventBudgetGenerator() {
     const rows = [];
     const push = (arr) => rows.push(arr);
 
-    push([docType]);
+    const activeDocTitle = activeNav === "Budgets" ? "Proposed Budget" : docType;
+
+    push([activeDocTitle]);
     push([`Event: ${eventName}`]);
     push([`Date: ${eventDate}`]);
     push([`Time: ${eventTime}`]);
@@ -70,15 +73,14 @@ export default function EventBudgetGenerator() {
     
     // INCOME TABLE
     push(["INCOME", "", "Unit Price", "Qty", "", "Total S$"]);
-    const incomeStart = rows.length + 1; // 1-based row index for Excel formula start
+    const incomeStart = rows.length + 1;
     income.forEach((r) => {
       const p = parseFloat(r.price) || 0;
       const q = parseFloat(r.qty) || 0;
-      // Formula for line amount: =C(row)*D(row)
       const currentRow = rows.length + 1;
       push([r.label || "", "", p, q, "", { t: "n", f: `C${currentRow}*D${currentRow}` }]);
     });
-    const incomeEnd = rows.length; // 1-based row index for Excel formula end
+    const incomeEnd = rows.length;
     
     push([
       "TOTAL INCOME", "", "", "", "",
@@ -132,7 +134,6 @@ export default function EventBudgetGenerator() {
 
     const ws = XLSX.utils.aoa_to_sheet(rows);
     
-    // Clean column widths for professional readability
     ws["!cols"] = [
       { wch: 30 }, { wch: 5 }, { wch: 14 }, { wch: 10 }, { wch: 5 }, { wch: 16 },
     ];
@@ -141,7 +142,6 @@ export default function EventBudgetGenerator() {
       { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
     ];
 
-    // Format currency columns (Price in Col C, Totals in Col F)
     for (let r = 0; r < rows.length; r++) {
       const addrPrice = XLSX.utils.encode_cell({ r, c: 2 });
       if (ws[addrPrice] && (typeof ws[addrPrice].v === "number" || ws[addrPrice].f)) {
@@ -155,14 +155,14 @@ export default function EventBudgetGenerator() {
     }
 
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, docType === "Proposed Budget" ? "Budget" : "Statement of Accounts");
+    XLSX.utils.book_append_sheet(wb, ws, activeDocTitle);
     return wb;
   }
 
   function handleDownload() {
     const wb = buildWorkbook();
     const safeName = (eventName || "event").replace(/[^a-z0-9]+/gi, "_");
-    const fileLabel = docType === "Proposed Budget" ? "Budget" : "Statement_of_Accounts";
+    const fileLabel = activeNav === "Budgets" ? "Proposed_Budget" : (docType === "Proposed Budget" ? "Budget" : "Statement_of_Accounts");
     XLSX.writeFile(wb, `${fileLabel}_${safeName}.xlsx`);
   }
 
@@ -181,26 +181,36 @@ export default function EventBudgetGenerator() {
           </button>
         </div>
         <nav className="flex-1 space-y-1">
-          <a className="flex items-center px-6 py-3 text-[#7c839b] hover:bg-[#3f465c]/50 hover:text-white transition-colors" href="#">
-            <span className="material-symbols-outlined mr-3">dashboard</span>
-            <span className="font-medium">Dashboard</span>
-          </a>
-          <a className="flex items-center px-6 py-3 text-[#7c839b] hover:bg-[#3f465c]/50 hover:text-white transition-colors" href="#">
-            <span className="material-symbols-outlined mr-3">account_balance_wallet</span>
-            <span className="font-medium">Budgets</span>
-          </a>
-          <a className="flex items-center px-6 py-3 text-[#fefcff] bg-[#2170e4] border-l-4 border-[#0058be] rounded-r-full mr-4 transition-colors" href="#">
-            <span className="material-symbols-outlined mr-3">receipt_long</span>
-            <span className="font-medium">Accounts</span>
-          </a>
-          <a className="flex items-center px-6 py-3 text-[#7c839b] hover:bg-[#3f465c]/50 hover:text-white transition-colors" href="#">
-            <span className="material-symbols-outlined mr-3">assessment</span>
-            <span className="font-medium">Reports</span>
-          </a>
-          <a className="flex items-center px-6 py-3 text-[#7c839b] hover:bg-[#3f465c]/50 hover:text-white transition-colors" href="#">
-            <span className="material-symbols-outlined mr-3">settings</span>
-            <span className="font-medium">Settings</span>
-          </a>
+          <SidebarButton 
+            icon="dashboard" 
+            label="Dashboard" 
+            active={activeNav === "Dashboard"} 
+            onClick={() => setActiveNav("Dashboard")} 
+          />
+          <SidebarButton 
+            icon="account_balance_wallet" 
+            label="Budgets" 
+            active={activeNav === "Budgets"} 
+            onClick={() => setActiveNav("Budgets")} 
+          />
+          <SidebarButton 
+            icon="receipt_long" 
+            label="Accounts" 
+            active={activeNav === "Accounts"} 
+            onClick={() => setActiveNav("Accounts")} 
+          />
+          <SidebarButton 
+            icon="assessment" 
+            label="Reports" 
+            active={activeNav === "Reports"} 
+            onClick={() => setActiveNav("Reports")} 
+          />
+          <SidebarButton 
+            icon="settings" 
+            label="Settings" 
+            active={activeNav === "Settings"} 
+            onClick={() => setActiveNav("Settings")} 
+          />
         </nav>
         <div className="mt-auto border-t border-[#c6c6cd]/20 pt-4">
           <a className="flex items-center px-6 py-3 text-[#7c839b] hover:text-white transition-colors" href="#">
@@ -221,25 +231,32 @@ export default function EventBudgetGenerator() {
         <header className="flex justify-between items-center w-full px-8 h-20 border-b border-[#c6c6cd] bg-[#f7f9fb] sticky top-0 z-40 shrink-0">
           <div className="flex items-center space-x-8">
             <div className="flex flex-col">
-              <h2 className="text-2xl font-bold text-[#191c1e]">Budget & Accounts</h2>
+              <h2 className="text-2xl font-bold text-[#191c1e]">
+                {activeNav === "Budgets" ? "Proposed Budget" : "Budget & Accounts"}
+              </h2>
               <div className="flex items-center mt-1">
                 <span className="bg-[#d8e2ff] text-[#001a42] text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded">Draft</span>
               </div>
             </div>
-            <nav className="hidden md:flex items-center space-x-6 h-full mt-4">
-              {["Proposed Budget", "Statement of Accounts"].map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setDocType(t)}
-                  className={`pb-4 font-semibold text-sm transition-all cursor-pointer ${
-                    docType === t ? "text-[#0058be] border-b-2 border-[#0058be]" : "text-[#45464d] hover:text-[#191c1e]"
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
-            </nav>
+
+            {/* Only show toggle if on Accounts view */}
+            {activeNav === "Accounts" && (
+              <nav className="hidden md:flex items-center space-x-6 h-full mt-4">
+                {["Proposed Budget", "Statement of Accounts"].map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setDocType(t)}
+                    className={`pb-4 font-semibold text-sm transition-all cursor-pointer ${
+                      docType === t ? "text-[#0058be] border-b-2 border-[#0058be]" : "text-[#45464d] hover:text-[#191c1e]"
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </nav>
+            )}
           </div>
+
           <div className="flex items-center space-x-4">
             <div className="relative">
               <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-[#45464d]">
@@ -575,5 +592,22 @@ export default function EventBudgetGenerator() {
 
       </div>
     </div>
+  );
+}
+
+// Sidebar Button Component with Active State Styling
+function SidebarButton({ icon, label, active, onClick }) {
+  return (
+    <button 
+      onClick={onClick}
+      className={`w-full flex items-center px-6 py-3 transition-colors cursor-pointer ${
+        active 
+          ? "text-[#fefcff] bg-[#2170e4] border-l-4 border-[#0058be] rounded-r-full mr-4 font-semibold" 
+          : "text-[#7c839b] hover:bg-[#3f465c]/50 hover:text-white"
+      }`}
+    >
+      <span className="material-symbols-outlined mr-3">{icon}</span>
+      <span>{label}</span>
+    </button>
   );
 }
