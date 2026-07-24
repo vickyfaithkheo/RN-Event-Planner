@@ -10,8 +10,8 @@ const money = (n) =>
   });
 
 export default function EventBudgetGenerator() {
-  const [activeNav, setActiveNav] = useState("Accounts"); // "Budgets" or "Accounts"
-  const [docType, setDocType] = useState("Proposed Budget");
+  const [activeNav, setActiveNav] = useState("Proposed Budget"); // Default starting tab
+  const [docType, setDocType] = useState("Statement of Accounts");
   const [orgName, setOrgName] = useState("Tampines Greencourt RN");
   const [eventName, setEventName] = useState("Visit to Snail Farm");
   const [eventDate, setEventDate] = useState("2026-03-01");
@@ -62,7 +62,7 @@ export default function EventBudgetGenerator() {
     const rows = [];
     const push = (arr) => rows.push(arr);
 
-    const activeDocTitle = activeNav === "Budgets" ? "Proposed Budget" : docType;
+    const activeDocTitle = activeNav === "Proposed Budget" ? "Proposed Budget" : docType;
 
     push([activeDocTitle]);
     push([`Event: ${eventName}`]);
@@ -162,14 +162,14 @@ export default function EventBudgetGenerator() {
   function handleDownload() {
     const wb = buildWorkbook();
     const safeName = (eventName || "event").replace(/[^a-z0-9]+/gi, "_");
-    const fileLabel = activeNav === "Budgets" ? "Proposed_Budget" : (docType === "Proposed Budget" ? "Budget" : "Statement_of_Accounts");
+    const fileLabel = activeNav === "Proposed Budget" ? "Proposed_Budget" : "Statement_of_Accounts";
     XLSX.writeFile(wb, `${fileLabel}_${safeName}.xlsx`);
   }
 
   return (
     <div className="bg-[#f7f9fb] text-[#191c1e] font-sans overflow-hidden flex h-screen">
       
-      {/* SideNavBar Shell */}
+      {/* SideNavBar Shell with New Sequence */}
       <aside className="fixed left-0 top-0 h-screen w-[260px] bg-[#131b2e] border-r border-[#c6c6cd]/20 flex flex-col py-6 z-50 shrink-0">
         <div className="px-6 mb-10">
           <h1 className="text-xl font-bold text-white leading-tight">Tampines GreenCourt RN</h1>
@@ -180,30 +180,31 @@ export default function EventBudgetGenerator() {
             + New Event
           </button>
         </div>
+        
         <nav className="flex-1 space-y-1">
           <SidebarButton 
-            icon="dashboard" 
-            label="Dashboard" 
-            active={activeNav === "Dashboard"} 
-            onClick={() => setActiveNav("Dashboard")} 
+            icon="account_balance_wallet" 
+            label="Proposed Budget" 
+            active={activeNav === "Proposed Budget"} 
+            onClick={() => setActiveNav("Proposed Budget")} 
           />
           <SidebarButton 
-            icon="account_balance_wallet" 
-            label="Budgets" 
-            active={activeNav === "Budgets"} 
-            onClick={() => setActiveNav("Budgets")} 
+            icon="dashboard" 
+            label="EDM Generation" 
+            active={activeNav === "EDM Generation"} 
+            onClick={() => setActiveNav("EDM Generation")} 
           />
           <SidebarButton 
             icon="receipt_long" 
-            label="Accounts" 
-            active={activeNav === "Accounts"} 
-            onClick={() => setActiveNav("Accounts")} 
+            label="Claim Details" 
+            active={activeNav === "Claim Details"} 
+            onClick={() => setActiveNav("Claim Details")} 
           />
           <SidebarButton 
             icon="assessment" 
-            label="Reports" 
-            active={activeNav === "Reports"} 
-            onClick={() => setActiveNav("Reports")} 
+            label="Statement of Accounts" 
+            active={activeNav === "Statement of Accounts"} 
+            onClick={() => setActiveNav("Statement of Accounts")} 
           />
           <SidebarButton 
             icon="settings" 
@@ -212,6 +213,7 @@ export default function EventBudgetGenerator() {
             onClick={() => setActiveNav("Settings")} 
           />
         </nav>
+
         <div className="mt-auto border-t border-[#c6c6cd]/20 pt-4">
           <a className="flex items-center px-6 py-3 text-[#7c839b] hover:text-white transition-colors" href="#">
             <span className="material-symbols-outlined mr-3">help</span>
@@ -232,15 +234,15 @@ export default function EventBudgetGenerator() {
           <div className="flex items-center space-x-8">
             <div className="flex flex-col">
               <h2 className="text-2xl font-bold text-[#191c1e]">
-                {activeNav === "Budgets" ? "Proposed Budget" : "Budget & Accounts"}
+                {activeNav === "Proposed Budget" ? "Proposed Budget" : activeNav === "Statement of Accounts" ? "Statement of Accounts" : activeNav}
               </h2>
               <div className="flex items-center mt-1">
                 <span className="bg-[#d8e2ff] text-[#001a42] text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded">Draft</span>
               </div>
             </div>
 
-            {/* Only show toggle if on Accounts view */}
-            {activeNav === "Accounts" && (
+            {/* Only show sub-toggle if viewing Statement of Accounts */}
+            {activeNav === "Statement of Accounts" && (
               <nav className="hidden md:flex items-center space-x-6 h-full mt-4">
                 {["Proposed Budget", "Statement of Accounts"].map((t) => (
                   <button
