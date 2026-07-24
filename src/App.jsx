@@ -39,23 +39,23 @@ const ACCOUNT_DESCRIPTIONS = [
 ];
 
 export default function EventBudgetGenerator() {
-  const [activeNav, setActiveNav] = useState("Statement of Accounts");
+  const [activeNav, setActiveNav] = useState("Proposed Budget");
   const [orgName, setOrgName] = useState("Tampines Greencourt RN");
   const [eventName, setEventName] = useState("Visit to Snail Farm");
   const [eventDate, setEventDate] = useState("2026-03-01");
   const [eventTime, setEventTime] = useState("10:30AM to 12:00PM");
 
-  // Budget / Accounts items
+  // Budget items (with price and qty)
   const [income, setIncome] = useState([
-    { id: uid(), label: "Registration Fee", amount: "450.00" },
-    { id: uid(), label: "Infant Fee", amount: "50.00" },
+    { id: uid(), label: "Registration Fee", price: "10", qty: "45" },
+    { id: uid(), label: "Infant Fee", price: "10", qty: "5" },
   ]);
   const [expenditure, setExpenditure] = useState([
-    { id: uid(), label: "Entrance Fee", amount: "800.00" },
-    { id: uid(), label: "Bus", amount: "400.00" },
+    { id: uid(), label: "Entrance Fee", price: "17.77", qty: "45" },
+    { id: uid(), label: "Bus", price: "400", qty: "1" },
   ]);
 
-  // Funding Percentage States for Statement of Accounts
+  // Funding Percentage States
   const [rnFundingPct, setRnFundingPct] = useState("50");
   const [necdcFundingPct, setNecdcFundingPct] = useState("50");
 
@@ -103,19 +103,19 @@ export default function EventBudgetGenerator() {
   const [gcdodDesignation, setGcdodDesignation] = useState("Deputy Constituency Director");
   const [gcdodOrg, setGcdodOrg] = useState("Tampines Boulevard CO");
 
-  // Calculations for Budget/Accounts
+  // Calculations for Proposed Budget
   const totalIncome = useMemo(
-    () => income.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0),
+    () => income.reduce((s, r) => s + (parseFloat(r.price) || 0) * (parseFloat(r.qty) || 0), 0),
     [income]
   );
   const totalExpenditure = useMemo(
-    () => expenditure.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0),
+    () => expenditure.reduce((s, r) => s + (parseFloat(r.price) || 0) * (parseFloat(r.qty) || 0), 0),
     [expenditure]
   );
   const net = totalIncome - totalExpenditure;
   const isDeficit = net < 0;
 
-  // Calculated Fund Allocations based on absolute Net Balance magnitude (or net value)
+  // Calculated Fund Allocations based on absolute Net Balance magnitude
   const absNet = Math.abs(net);
   const rnAllocatedAmount = absNet * ((parseFloat(rnFundingPct) || 0) / 100);
   const necdcAllocatedAmount = absNet * ((parseFloat(necdcFundingPct) || 0) / 100);
@@ -131,13 +131,15 @@ export default function EventBudgetGenerator() {
   );
   const claimsGrandTotal = activityExpensesTotal + adminExpensesTotal;
 
-  const updateRow = (setter, id, field, value) =>
+  const updateBudgetRow = (setter, id, field, value) =>
     setter((rows) => rows.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
-  const addRow = (setter) =>
-    setter((rows) => [...rows, { id: uid(), label: "", amount: "" }]);
-  const removeRow = (setter, id) =>
+  const addBudgetRow = (setter) =>
+    setter((rows) => [...rows, { id: uid(), label: "", price: "", qty: "" }]);
+  const removeBudgetRow = (setter, id) =>
     setter((rows) => rows.filter((r) => r.id !== id));
 
+  const updateClaimRow = (id, field, value) =>
+    setClaims((rows) => rows.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
   const addClaimRow = () =>
     setClaims((rows) => [
       ...rows,
@@ -179,48 +181,51 @@ export default function EventBudgetGenerator() {
       push(["Administrative_Expenses Subtotal", "", "", "", "", "", "", "", adminExpensesTotal]);
       push(["TOTAL CLAIM AMOUNT", "", "", "", "", "", "", "", claimsGrandTotal]);
     } else {
-      push(["INCOME", "", "Amount ($)"]);
+      push(["INCOME", "", "Unit Price", "Qty", "", "Total S$"]);
       const incomeStart = rows.length + 1;
       income.forEach((r) => {
-        const amt = parseFloat(r.amount) || 0;
-        push([r.label || "", "", amt]);
+        const p = parseFloat(r.price) || 0;
+        const q = parseFloat(r.qty) || 0;
+        const currentRow = rows.length + 1;
+        push([r.label || "", "", p, q, "", { t: "n", f: `C${currentRow}*D${currentRow}` }]);
       });
       const incomeEnd = rows.length;
       
       push([
-        "TOTAL INCOME", "",
-        { t: "n", f: `SUM(C${incomeStart}:C${incomeEnd})` },
+        "TOTAL INCOME", "", "", "", "",
+        { t: "n", f: `SUM(F${incomeStart}:F${incomeEnd})` },
       ]);
       const totalIncomeRow = rows.length;
       
       push([]);
       
-      push(["EXPENDITURE", "", "Amount ($)"]);
+      push(["EXPENDITURE", "", "Unit Price", "Qty", "", "Total S$"]);
       const expStart = rows.length + 1;
       expenditure.forEach((r) => {
-        const amt = parseFloat(r.amount) || 0;
-        push([r.label || "", "", amt]);
+        const p = parseFloat(r.price) || 0;
+        const q = parseFloat(r.qty) || 0;
+        const currentRow = rows.length + 1;
+        push([r.label || "", "", p, q, "", { t: "n", f: `C${currentRow}*D${currentRow}` }]);
       });
       const expEnd = rows.length;
       
       push([
-        "TOTAL EXPENDITURE", "",
-        { t: "n", f: `SUM(C${expStart}:C${expEnd})` },
+        "TOTAL EXPENDITURE", "", "", "", "",
+        { t: "n", f: `SUM(F${expStart}:F${expEnd})` },
       ]);
       const totalExpRow = rows.length;
       
       push([]);
       
+      const balanceLabel = activeNav === "Proposed Budget" ? "ESTIMATED NET BALANCE" : "NET BALANCE";
       push([
-        "NET BALANCE", "",
-        { t: "n", f: `C${totalIncomeRow}-C${totalExpRow}` },
+        balanceLabel, "", "", "", "",
+        { t: "n", f: `F${totalIncomeRow}-F${totalExpRow}` },
       ]);
       
-      if (activeNav === "Statement of Accounts") {
-        push([]);
-        push(["RN Funding Allocation (%)", rnFundingPct + "%", "RN Funded Amount", rnAllocatedAmount]);
-        push(["NECDC Funding Allocation (%)", necdcFundingPct + "%", "NECDC Funded Amount", necdcAllocatedAmount]);
-      }
+      push([]);
+      push(["RN Funding Allocation (%)", rnFundingPct + "%", "", "", "NECDC Funding Allocation (%)", necdcFundingPct + "%"]);
+      push(["RN Funded Amount", rnAllocatedAmount, "", "", "NECDC Funded Amount", necdcAllocatedAmount]);
 
       push([]);
       push([]);
@@ -232,18 +237,27 @@ export default function EventBudgetGenerator() {
       push(["Organization:", preparedOrg, "", "", "Organization:", approverOrg]);
       push([]);
       push([]);
-      push(["Certified Correct & True Copy by:", "", "", "", "Certified Correct & True Copy by GCDO:"]);
-      push([]);
-      push([]);
-      push(["Name:", directorName, "", "", "Name:", gcdodName]);
-      push(["Designation:", directorDesignation, "", "", "Designation:", gcdodDesignation]);
-      push(["Organization:", directorOrg, "", "", "Organization:", gcdodOrg]);
+      if (activeNav === "Statement of Accounts") {
+        push(["Certified Correct & True Copy by:", "", "", "", "Certified Correct & True Copy by GCDO:"]);
+        push([]);
+        push([]);
+        push(["Name:", directorName, "", "", "Name:", gcdodName]);
+        push(["Designation:", directorDesignation, "", "", "Designation:", gcdodDesignation]);
+        push(["Organization:", directorOrg, "", "", "Organization:", gcdodOrg]);
+      } else {
+        push(["Certified Correct & True Copy by:"]);
+        push([]);
+        push([]);
+        push(["Name:", directorName]);
+        push(["Designation:", directorDesignation]);
+        push(["Organization:", directorOrg]);
+      }
     }
 
     const ws = XLSX.utils.aoa_to_sheet(rows);
     
     ws["!cols"] = [
-      { wch: 30 }, { wch: 18 }, { wch: 22 }, { wch: 15 }, { wch: 12 }, { wch: 30 }, { wch: 22 }, { wch: 25 }, { wch: 18 },
+      { wch: 30 }, { wch: 5 }, { wch: 14 }, { wch: 10 }, { wch: 5 }, { wch: 16 },
     ];
     
     ws["!merges"] = [
@@ -418,14 +432,14 @@ export default function EventBudgetGenerator() {
                                   <input 
                                     className="w-full bg-transparent border-none p-1 text-sm focus:bg-white rounded font-medium" 
                                     value={c.projectName} 
-                                    onChange={(e) => updateRow(setClaims, c.id, "projectName", e.target.value)} 
+                                    onChange={(e) => updateClaimRow(c.id, "projectName", e.target.value)} 
                                     placeholder="Project Name" 
                                   />
                                 ) : (
                                   <input 
                                     className="w-full bg-transparent border-none p-1 text-sm text-[#45464d]/60 focus:bg-white rounded italic" 
                                     value={displayedProjectName} 
-                                    onChange={(e) => updateRow(setClaims, c.id, "projectName", e.target.value)} 
+                                    onChange={(e) => updateClaimRow(c.id, "projectName", e.target.value)} 
                                     placeholder={primaryProjectName || "Project Name"} 
                                   />
                                 )}
@@ -434,7 +448,7 @@ export default function EventBudgetGenerator() {
                                 <input 
                                   className="w-full bg-transparent border-none p-1 text-sm focus:bg-white rounded" 
                                   value={c.vendor} 
-                                  onChange={(e) => updateRow(setClaims, c.id, "vendor", e.target.value)} 
+                                  onChange={(e) => updateClaimRow(c.id, "vendor", e.target.value)} 
                                   placeholder="FullName/UEN" 
                                 />
                               </td>
@@ -442,7 +456,7 @@ export default function EventBudgetGenerator() {
                                 <input 
                                   className="w-full bg-transparent border-none p-1 text-sm focus:bg-white rounded" 
                                   value={c.invoiceNo} 
-                                  onChange={(e) => updateRow(setClaims, c.id, "invoiceNo", e.target.value)} 
+                                  onChange={(e) => updateClaimRow(c.id, "invoiceNo", e.target.value)} 
                                   placeholder="INV-000" 
                                 />
                               </td>
@@ -450,7 +464,7 @@ export default function EventBudgetGenerator() {
                                 <input 
                                   className="w-full bg-transparent border-none p-1 text-sm focus:bg-white rounded" 
                                   value={c.date} 
-                                  onChange={(e) => updateRow(setClaims, c.id, "date", e.target.value)} 
+                                  onChange={(e) => updateClaimRow(c.id, "date", e.target.value)} 
                                   placeholder="dd/mm/yyyy" 
                                 />
                               </td>
@@ -459,7 +473,7 @@ export default function EventBudgetGenerator() {
                                   rows="2" 
                                   className="w-full bg-transparent border-none p-1 text-sm focus:bg-white rounded resize-none min-h-[48px]" 
                                   value={c.itemDetails} 
-                                  onChange={(e) => updateRow(setClaims, c.id, "itemDetails", e.target.value)} 
+                                  onChange={(e) => updateClaimRow(c.id, "itemDetails", e.target.value)} 
                                   placeholder="Describe items..." 
                                 />
                               </td>
@@ -467,7 +481,7 @@ export default function EventBudgetGenerator() {
                                 <select 
                                   className="w-full bg-transparent border-none p-1 text-sm focus:bg-white rounded cursor-pointer" 
                                   value={c.accountGroup} 
-                                  onChange={(e) => updateRow(setClaims, c.id, "accountGroup", e.target.value)}
+                                  onChange={(e) => updateClaimRow(c.id, "accountGroup", e.target.value)}
                                 >
                                   <option value="Activity_Expenses">Activity_Expenses</option>
                                   <option value="Administrative_Expenses">Administrative_Expenses</option>
@@ -477,7 +491,7 @@ export default function EventBudgetGenerator() {
                                 <select 
                                   className="w-full bg-transparent border-none p-1 text-sm focus:bg-white rounded cursor-pointer" 
                                   value={c.accountDesc} 
-                                  onChange={(e) => updateRow(setClaims, c.id, "accountDesc", e.target.value)}
+                                  onChange={(e) => updateClaimRow(c.id, "accountDesc", e.target.value)}
                                 >
                                   {ACCOUNT_DESCRIPTIONS.map((desc) => (
                                     <option key={desc} value={desc}>{desc}</option>
@@ -490,7 +504,7 @@ export default function EventBudgetGenerator() {
                                   step="0.01" 
                                   className="w-full bg-transparent border-none p-1 text-sm text-right font-mono focus:bg-white rounded" 
                                   value={c.amount} 
-                                  onChange={(e) => updateRow(setClaims, c.id, "amount", e.target.value)} 
+                                  onChange={(e) => updateClaimRow(c.id, "amount", e.target.value)} 
                                 />
                               </td>
                               <td className="px-3 py-3 text-center">
@@ -536,7 +550,7 @@ export default function EventBudgetGenerator() {
 
             ) : (
 
-              /* ---------------- BUDGET & STATEMENT OF ACCOUNTS VIEWS ---------------- */
+              /* ---------------- PROPOSED BUDGET & STATEMENT OF ACCOUNTS VIEWS ---------------- */
               <>
                 <section className="bg-white border border-[#c6c6cd] rounded-lg p-6 shadow-sm">
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -588,13 +602,15 @@ export default function EventBudgetGenerator() {
                         <thead>
                           <tr className="border-b border-[#c6c6cd]">
                             <th className="text-left py-3 text-xs font-semibold text-[#45464d]">Description</th>
-                            <th className="text-right py-3 text-xs font-semibold text-[#45464d] w-36">Amount ($)</th>
+                            <th className="text-center py-3 text-xs font-semibold text-[#45464d] w-20">Price</th>
+                            <th className="text-center py-3 text-xs font-semibold text-[#45464d] w-16">Qty</th>
+                            <th className="text-right py-3 text-xs font-semibold text-[#45464d] w-28">Amount ($)</th>
                             <th className="w-10"></th>
                           </tr>
                         </thead>
                         <tbody>
                           {income.map((r) => {
-                            const amt = parseFloat(r.amount) || 0;
+                            const lineTotal = (parseFloat(r.price) || 0) * (parseFloat(r.qty) || 0);
                             return (
                               <tr key={r.id} className="border-b border-[#c6c6cd]/50 group">
                                 <td className="py-3">
@@ -602,20 +618,33 @@ export default function EventBudgetGenerator() {
                                     className="w-full bg-transparent border-b border-transparent hover:border-[#c6c6cd] focus:outline-none focus:border-[#0058be] py-1 text-sm transition-colors"
                                     placeholder="Description"
                                     value={r.label}
-                                    onChange={(e) => updateRow(setIncome, r.id, "label", e.target.value)}
+                                    onChange={(e) => updateBudgetRow(setIncome, r.id, "label", e.target.value)}
+                                  />
+                                </td>
+                                <td className="py-3 px-1">
+                                  <input
+                                    className="w-full bg-transparent border-b border-transparent hover:border-[#c6c6cd] focus:outline-none focus:border-[#0058be] py-1 text-sm text-center transition-colors"
+                                    placeholder="0.00"
+                                    value={r.price}
+                                    onChange={(e) => updateBudgetRow(setIncome, r.id, "price", e.target.value)}
+                                  />
+                                </td>
+                                <td className="py-3 px-1">
+                                  <input
+                                    className="w-full bg-transparent border-b border-transparent hover:border-[#c6c6cd] focus:outline-none focus:border-[#0058be] py-1 text-sm text-center transition-colors"
+                                    placeholder="1"
+                                    value={r.qty}
+                                    onChange={(e) => updateBudgetRow(setIncome, r.id, "qty", e.target.value)}
                                   />
                                 </td>
                                 <td className="py-3 text-right">
-                                  <input
-                                    className="w-full bg-transparent border-b border-transparent hover:border-[#c6c6cd] focus:outline-none focus:border-[#0058be] py-1 text-sm text-right font-mono transition-colors"
-                                    placeholder="0.00"
-                                    value={r.amount}
-                                    onChange={(e) => updateRow(setIncome, r.id, "amount", e.target.value)}
-                                  />
+                                  <span className="font-mono text-sm font-medium text-[#191c1e]">
+                                    {money(lineTotal)}
+                                  </span>
                                 </td>
                                 <td className="py-3 text-center">
                                   <button
-                                    onClick={() => removeRow(setIncome, r.id)}
+                                    onClick={() => removeBudgetRow(setIncome, r.id)}
                                     className="text-[#ba1a1a] opacity-0 group-hover:opacity-100 hover:scale-110 transition-all cursor-pointer"
                                   >
                                     <span className="material-symbols-outlined text-sm">delete</span>
@@ -626,7 +655,7 @@ export default function EventBudgetGenerator() {
                           })}
                         </tbody>
                       </table>
-                      <button onClick={() => addRow(setIncome)} className="mt-6 flex items-center text-[#0058be] text-sm font-semibold hover:underline cursor-pointer">
+                      <button onClick={() => addBudgetRow(setIncome)} className="mt-6 flex items-center text-[#0058be] text-sm font-semibold hover:underline cursor-pointer">
                         <span className="material-symbols-outlined mr-1">add_circle</span> Add Income Line
                       </button>
                     </div>
@@ -649,13 +678,15 @@ export default function EventBudgetGenerator() {
                         <thead>
                           <tr className="border-b border-[#c6c6cd]">
                             <th className="text-left py-3 text-xs font-semibold text-[#45464d]">Description</th>
-                            <th className="text-right py-3 text-xs font-semibold text-[#45464d] w-36">Amount ($)</th>
+                            <th className="text-center py-3 text-xs font-semibold text-[#45464d] w-20">Price</th>
+                            <th className="text-center py-3 text-xs font-semibold text-[#45464d] w-16">Qty</th>
+                            <th className="text-right py-3 text-xs font-semibold text-[#45464d] w-28">Amount ($)</th>
                             <th className="w-10"></th>
                           </tr>
                         </thead>
                         <tbody>
                           {expenditure.map((r) => {
-                            const amt = parseFloat(r.amount) || 0;
+                            const lineTotal = (parseFloat(r.price) || 0) * (parseFloat(r.qty) || 0);
                             return (
                               <tr key={r.id} className="border-b border-[#c6c6cd]/50 group">
                                 <td className="py-3">
@@ -663,20 +694,33 @@ export default function EventBudgetGenerator() {
                                     className="w-full bg-transparent border-b border-transparent hover:border-[#c6c6cd] focus:outline-none focus:border-[#0058be] py-1 text-sm transition-colors"
                                     placeholder="Description"
                                     value={r.label}
-                                    onChange={(e) => updateRow(setExpenditure, r.id, "label", e.target.value)}
+                                    onChange={(e) => updateBudgetRow(setExpenditure, r.id, "label", e.target.value)}
+                                  />
+                                </td>
+                                <td className="py-3 px-1">
+                                  <input
+                                    className="w-full bg-transparent border-b border-transparent hover:border-[#c6c6cd] focus:outline-none focus:border-[#0058be] py-1 text-sm text-center transition-colors"
+                                    placeholder="0.00"
+                                    value={r.price}
+                                    onChange={(e) => updateBudgetRow(setExpenditure, r.id, "price", e.target.value)}
+                                  />
+                                </td>
+                                <td className="py-3 px-1">
+                                  <input
+                                    className="w-full bg-transparent border-b border-transparent hover:border-[#c6c6cd] focus:outline-none focus:border-[#0058be] py-1 text-sm text-center transition-colors"
+                                    placeholder="1"
+                                    value={r.qty}
+                                    onChange={(e) => updateBudgetRow(setExpenditure, r.id, "qty", e.target.value)}
                                   />
                                 </td>
                                 <td className="py-3 text-right">
-                                  <input
-                                    className="w-full bg-transparent border-b border-transparent hover:border-[#c6c6cd] focus:outline-none focus:border-[#0058be] py-1 text-sm text-right font-mono transition-colors"
-                                    placeholder="0.00"
-                                    value={r.amount}
-                                    onChange={(e) => updateRow(setExpenditure, r.id, "amount", e.target.value)}
-                                  />
+                                  <span className="font-mono text-sm font-medium text-[#ba1a1a]">
+                                    {money(lineTotal)}
+                                  </span>
                                 </td>
                                 <td className="py-3 text-center">
                                   <button
-                                    onClick={() => removeRow(setExpenditure, r.id)}
+                                    onClick={() => removeBudgetRow(setExpenditure, r.id)}
                                     className="text-[#ba1a1a] opacity-0 group-hover:opacity-100 hover:scale-110 transition-all cursor-pointer"
                                   >
                                     <span className="material-symbols-outlined text-sm">delete</span>
@@ -687,7 +731,7 @@ export default function EventBudgetGenerator() {
                           })}
                         </tbody>
                       </table>
-                      <button onClick={() => addRow(setExpenditure)} className="mt-6 flex items-center text-[#0058be] text-sm font-semibold hover:underline cursor-pointer">
+                      <button onClick={() => addBudgetRow(setExpenditure)} className="mt-6 flex items-center text-[#0058be] text-sm font-semibold hover:underline cursor-pointer">
                         <span className="material-symbols-outlined mr-1">add_circle</span> Add Expense Line
                       </button>
                     </div>
@@ -695,73 +739,73 @@ export default function EventBudgetGenerator() {
 
                 </div>
 
-                {/* Bottom Section: Net Balance & Funding Allocations (Only on Statement of Accounts) */}
-                {activeNav === "Statement of Accounts" && (
-                  <div className="grid grid-cols-1 gap-6">
-                    <div className={`bg-white border-l-4 ${isDeficit ? 'border-[#ba1a1a]' : 'border-[#009668]'} border border-[#c6c6cd] rounded-lg p-6 shadow-sm`}>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-                        
-                        {/* Net Balance Col */}
-                        <div>
-                          <h4 className="text-xs font-semibold text-[#45464d] uppercase tracking-widest mb-2">Net Balance</h4>
-                          <p className={`text-3xl font-mono font-bold ${isDeficit ? 'text-[#ba1a1a]' : 'text-[#009668]'}`}>
-                            {isDeficit ? "-S$" : "S$"} {money(Math.abs(net))}
-                          </p>
-                        </div>
-
-                        {/* RN Funding Col */}
-                        <div className="border-t md:border-t-0 md:border-l border-[#c6c6cd]/50 pt-4 md:pt-0 md:pl-6 flex items-center justify-between">
-                          <div>
-                            <h4 className="text-xs font-semibold text-[#45464d] uppercase tracking-widest mb-2">RN Funding</h4>
-                            <div className="flex items-center space-x-1">
-                              <input 
-                                type="number" 
-                                className="w-16 bg-[#f7f9fb] border border-[#c6c6cd] rounded p-1 text-xs text-center font-mono focus:outline-none focus:border-[#0058be]" 
-                                value={rnFundingPct} 
-                                onChange={(e) => setRnFundingPct(e.target.value)} 
-                              />
-                              <span className="text-xs text-[#45464d] font-bold">%</span>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-[10px] font-bold text-[#45464d] uppercase tracking-wider block">Amount</span>
-                            <span className="font-mono text-xl font-bold text-[#191c1e]">
-                              {isDeficit ? "-S$" : "S$"} {money(rnAllocatedAmount)}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* NECDC Funding Col */}
-                        <div className="border-t md:border-t-0 md:border-l border-[#c6c6cd]/50 pt-4 md:pt-0 md:pl-6 flex items-center justify-between">
-                          <div>
-                            <h4 className="text-xs font-semibold text-[#45464d] uppercase tracking-widest mb-2">NECDC Funding</h4>
-                            <div className="flex items-center space-x-1">
-                              <input 
-                                type="number" 
-                                className="w-16 bg-[#f7f9fb] border border-[#c6c6cd] rounded p-1 text-xs text-center font-mono focus:outline-none focus:border-[#0058be]" 
-                                value={necdcFundingPct} 
-                                onChange={(e) => setNecdcFundingPct(e.target.value)} 
-                              />
-                              <span className="text-xs text-[#45464d] font-bold">%</span>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-[10px] font-bold text-[#45464d] uppercase tracking-wider block">Amount</span>
-                            <span className="font-mono text-xl font-bold text-[#191c1e]">
-                              {isDeficit ? "-S$" : "S$"} {money(necdcAllocatedAmount)}
-                            </span>
-                          </div>
-                        </div>
-
+                {/* Bottom Section: Estimated Net Balance / Net Balance & Funding Allocations */}
+                <div className="grid grid-cols-1 gap-6">
+                  <div className={`bg-white border-l-4 ${isDeficit ? 'border-[#ba1a1a]' : 'border-[#009668]'} border border-[#c6c6cd] rounded-lg p-6 shadow-sm`}>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                      
+                      {/* Net Balance Col */}
+                      <div>
+                        <h4 className="text-xs font-semibold text-[#45464d] uppercase tracking-widest mb-2">
+                          {activeNav === "Proposed Budget" ? "Estimated Net Balance" : "Net Balance"}
+                        </h4>
+                        <p className={`text-3xl font-mono font-bold ${isDeficit ? 'text-[#ba1a1a]' : 'text-[#009668]'}`}>
+                          {isDeficit ? "-S$" : "S$"} {money(Math.abs(net))}
+                        </p>
                       </div>
+
+                      {/* RN Funding Col */}
+                      <div className="border-t md:border-t-0 md:border-l border-[#c6c6cd]/50 pt-4 md:pt-0 md:pl-6 flex items-center justify-between">
+                        <div>
+                          <h4 className="text-xs font-semibold text-[#45464d] uppercase tracking-widest mb-2">RN Funding</h4>
+                          <div className="flex items-center space-x-1">
+                            <input 
+                              type="number" 
+                              className="w-16 bg-[#f7f9fb] border border-[#c6c6cd] rounded p-1 text-xs text-center font-mono focus:outline-none focus:border-[#0058be]" 
+                              value={rnFundingPct} 
+                              onChange={(e) => setRnFundingPct(e.target.value)} 
+                            />
+                            <span className="text-xs text-[#45464d] font-bold">%</span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[10px] font-bold text-[#45464d] uppercase tracking-wider block">Amount</span>
+                          <span className="font-mono text-xl font-bold text-[#191c1e]">
+                            {isDeficit ? "-S$" : "S$"} {money(rnAllocatedAmount)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* NECDC Funding Col */}
+                      <div className="border-t md:border-t-0 md:border-l border-[#c6c6cd]/50 pt-4 md:pt-0 md:pl-6 flex items-center justify-between">
+                        <div>
+                          <h4 className="text-xs font-semibold text-[#45464d] uppercase tracking-widest mb-2">NECDC Funding</h4>
+                          <div className="flex items-center space-x-1">
+                            <input 
+                              type="number" 
+                              className="w-16 bg-[#f7f9fb] border border-[#c6c6cd] rounded p-1 text-xs text-center font-mono focus:outline-none focus:border-[#0058be]" 
+                              value={necdcFundingPct} 
+                              onChange={(e) => setNecdcFundingPct(e.target.value)} 
+                            />
+                            <span className="text-xs text-[#45464d] font-bold">%</span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[10px] font-bold text-[#45464d] uppercase tracking-wider block">Amount</span>
+                          <span className="font-mono text-xl font-bold text-[#191c1e]">
+                            {isDeficit ? "-S$" : "S$"} {money(necdcAllocatedAmount)}
+                          </span>
+                        </div>
+                      </div>
+
                     </div>
                   </div>
-                )}
+                </div>
 
-                {/* Preparation & Authorization Card (Full Width with 4 parties) */}
+                {/* Preparation & Authorization Card (3 columns for Proposed Budget, 4 columns for Statement of Accounts) */}
                 <div className="bg-white border border-[#c6c6cd] rounded-lg p-6 shadow-sm mt-6">
                   <h4 className="text-lg font-semibold mb-6 text-[#191c1e]">Preparation & Authorization</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className={`grid grid-cols-1 md:grid-cols-2 ${activeNav === "Statement of Accounts" ? "lg:grid-cols-4" : "lg:grid-cols-3"} gap-6`}>
                     
                     {/* Prepared By Block */}
                     <div className="bg-[#f2f4f6]/40 p-5 rounded-lg border border-[#c6c6cd]/40 flex flex-col h-full">
@@ -841,31 +885,33 @@ export default function EventBudgetGenerator() {
                       </div>
                     </div>
 
-                    {/* Certified Correct by GCDO Block */}
-                    <div className="bg-[#f2f4f6]/40 p-5 rounded-lg border border-[#c6c6cd]/40 flex flex-col h-full">
-                      <h5 className="text-xs font-bold text-[#45464d] uppercase tracking-widest mb-4 border-b border-[#c6c6cd]/30 pb-2">Certified Correct by GCDO</h5>
-                      <div className="space-y-3 mb-6">
-                        <div>
-                          <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Name</label>
-                          <input className="w-full bg-transparent border-b border-[#c6c6cd]/50 hover:border-[#c6c6cd] focus:border-[#0058be] py-1 text-sm font-semibold outline-none transition-colors" value={gcdodName} onChange={(e) => setGcdodName(e.target.value)} />
+                    {/* Certified Correct by GCDO Block (Only for Statement of Accounts) */}
+                    {activeNav === "Statement of Accounts" && (
+                      <div className="bg-[#f2f4f6]/40 p-5 rounded-lg border border-[#c6c6cd]/40 flex flex-col h-full">
+                        <h5 className="text-xs font-bold text-[#45464d] uppercase tracking-widest mb-4 border-b border-[#c6c6cd]/30 pb-2">Certified Correct by GCDO</h5>
+                        <div className="space-y-3 mb-6">
+                          <div>
+                            <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Name</label>
+                            <input className="w-full bg-transparent border-b border-[#c6c6cd]/50 hover:border-[#c6c6cd] focus:border-[#0058be] py-1 text-sm font-semibold outline-none transition-colors" value={gcdodName} onChange={(e) => setGcdodName(e.target.value)} />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Designation</label>
+                            <input className="w-full bg-transparent border-b border-[#c6c6cd]/50 hover:border-[#c6c6cd] focus:border-[#0058be] py-1 text-xs text-[#45464d] outline-none transition-colors" value={gcdodDesignation} onChange={(e) => setGcdodDesignation(e.target.value)} />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Organization</label>
+                            <input className="w-full bg-transparent border-b border-[#c6c6cd]/50 hover:border-[#c6c6cd] focus:border-[#0058be] py-1 text-xs text-[#45464d] outline-none transition-colors" value={gcdodOrg} onChange={(e) => setGcdodOrg(e.target.value)} />
+                          </div>
                         </div>
-                        <div>
-                          <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Designation</label>
-                          <input className="w-full bg-transparent border-b border-[#c6c6cd]/50 hover:border-[#c6c6cd] focus:border-[#0058be] py-1 text-xs text-[#45464d] outline-none transition-colors" value={gcdodDesignation} onChange={(e) => setGcdodDesignation(e.target.value)} />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Organization</label>
-                          <input className="w-full bg-transparent border-b border-[#c6c6cd]/50 hover:border-[#c6c6cd] focus:border-[#0058be] py-1 text-xs text-[#45464d] outline-none transition-colors" value={gcdodOrg} onChange={(e) => setGcdodOrg(e.target.value)} />
+                        <div className="mt-auto">
+                          <label className="block text-[10px] font-semibold text-[#45464d] mb-2 uppercase">Digital Signature</label>
+                          <div className="signature-pad w-full h-24 border border-dashed border-[#76777d] rounded flex flex-col items-center justify-center cursor-pointer hover:bg-[#f7f9fb] transition-colors group">
+                            <span className="material-symbols-outlined text-[#45464d] group-hover:scale-110 transition-transform">draw</span>
+                            <p className="text-[#45464d] text-[10px] mt-1 font-bold tracking-wider">TAP TO SIGN</p>
+                          </div>
                         </div>
                       </div>
-                      <div className="mt-auto">
-                        <label className="block text-[10px] font-semibold text-[#45464d] mb-2 uppercase">Digital Signature</label>
-                        <div className="signature-pad w-full h-24 border border-dashed border-[#76777d] rounded flex flex-col items-center justify-center cursor-pointer hover:bg-[#f7f9fb] transition-colors group">
-                          <span className="material-symbols-outlined text-[#45464d] group-hover:scale-110 transition-transform">draw</span>
-                          <p className="text-[#45464d] text-[10px] mt-1 font-bold tracking-wider">TAP TO SIGN</p>
-                        </div>
-                      </div>
-                    </div>
+                    )}
 
                   </div>
                 </div>
