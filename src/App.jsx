@@ -124,7 +124,6 @@ export default function EventBudgetGenerator() {
       { wch: 22 }, { wch: 18 }, { wch: 12 }, { wch: 10 }, { wch: 20 }, { wch: 14 },
     ];
     
-    // Format currency columns
     for (let r = 0; r < rows.length; r++) {
       const addrPrice = XLSX.utils.encode_cell({ r, c: 2 });
       if (ws[addrPrice] && typeof ws[addrPrice].v === "number") ws[addrPrice].z = "$#,##0.00;($#,##0.00)";
@@ -146,45 +145,63 @@ export default function EventBudgetGenerator() {
   }
 
   return (
-    <div className="bg-background text-on-surface font-body-md overflow-hidden flex h-screen">
+    <div className="bg-[#f7f9fb] text-[#191c1e] font-sans overflow-hidden flex h-screen">
       
       {/* SideNavBar Shell */}
-      <aside className="fixed left-0 top-0 h-screen w-sidebar-width bg-primary-container border-r border-outline-variant flex flex-col py-6 z-50 shrink-0">
+      <aside className="fixed left-0 top-0 h-screen w-[260px] bg-[#131b2e] border-r border-[#c6c6cd]/20 flex flex-col py-6 z-50 shrink-0">
         <div className="px-6 mb-10">
-          <h1 className="font-headline-md text-xl font-bold text-on-primary leading-tight">Tampines GreenCourt RN</h1>
-          <p className="text-on-primary-container opacity-70 text-sm mt-1">Planner Portal</p>
+          <h1 className="text-xl font-bold text-white leading-tight">Tampines GreenCourt RN</h1>
+          <p className="text-[#7c839b] text-sm mt-1">Planner Portal</p>
         </div>
         <div className="px-4 mb-8">
-          <button className="w-full py-3 bg-secondary-container text-on-secondary-container font-semibold rounded shadow-sm hover:scale-95 transition-transform duration-150">
+          <button className="w-full py-3 bg-[#2170e4] text-[#fefcff] font-semibold rounded shadow-sm hover:opacity-90 transition-opacity">
             + New Event
           </button>
         </div>
         <nav className="flex-1 space-y-1">
-          <SidebarLink icon="dashboard" label="Dashboard" />
-          <SidebarLink icon="account_balance_wallet" label="Budgets" />
-          <a className="flex items-center px-6 py-3 text-on-secondary-container bg-secondary-container border-l-4 border-secondary rounded-r-full mr-4 transition-colors" href="#">
+          <a className="flex items-center px-6 py-3 text-[#7c839b] hover:bg-[#3f465c]/50 hover:text-white transition-colors" href="#">
+            <span className="material-symbols-outlined mr-3">dashboard</span>
+            <span className="font-medium">Dashboard</span>
+          </a>
+          <a className="flex items-center px-6 py-3 text-[#7c839b] hover:bg-[#3f465c]/50 hover:text-white transition-colors" href="#">
+            <span className="material-symbols-outlined mr-3">account_balance_wallet</span>
+            <span className="font-medium">Budgets</span>
+          </a>
+          <a className="flex items-center px-6 py-3 text-[#fefcff] bg-[#2170e4] border-l-4 border-[#0058be] rounded-r-full mr-4 transition-colors" href="#">
             <span className="material-symbols-outlined mr-3">receipt_long</span>
             <span className="font-medium">Accounts</span>
           </a>
-          <SidebarLink icon="assessment" label="Reports" />
-          <SidebarLink icon="settings" label="Settings" />
+          <a className="flex items-center px-6 py-3 text-[#7c839b] hover:bg-[#3f465c]/50 hover:text-white transition-colors" href="#">
+            <span className="material-symbols-outlined mr-3">assessment</span>
+            <span className="font-medium">Reports</span>
+          </a>
+          <a className="flex items-center px-6 py-3 text-[#7c839b] hover:bg-[#3f465c]/50 hover:text-white transition-colors" href="#">
+            <span className="material-symbols-outlined mr-3">settings</span>
+            <span className="font-medium">Settings</span>
+          </a>
         </nav>
-        <div className="mt-auto border-t border-outline-variant/20 pt-4">
-          <SidebarLink icon="help" label="Help" />
-          <SidebarLink icon="logout" label="Sign Out" />
+        <div className="mt-auto border-t border-[#c6c6cd]/20 pt-4">
+          <a className="flex items-center px-6 py-3 text-[#7c839b] hover:text-white transition-colors" href="#">
+            <span className="material-symbols-outlined mr-3">help</span>
+            <span className="font-medium">Help</span>
+          </a>
+          <a className="flex items-center px-6 py-3 text-[#7c839b] hover:text-white transition-colors" href="#">
+            <span className="material-symbols-outlined mr-3">logout</span>
+            <span className="font-medium">Sign Out</span>
+          </a>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <div className="ml-sidebar-width flex flex-col flex-1 overflow-hidden">
+      <div className="ml-[260px] flex flex-col flex-1 overflow-hidden">
         
         {/* TopAppBar */}
-        <header className="flex justify-between items-center w-full px-margin-page h-20 border-b border-outline-variant bg-surface sticky top-0 z-40 shrink-0">
+        <header className="flex justify-between items-center w-full px-8 h-20 border-b border-[#c6c6cd] bg-[#f7f9fb] sticky top-0 z-40 shrink-0">
           <div className="flex items-center space-x-8">
             <div className="flex flex-col">
-              <h2 className="text-2xl font-bold text-on-surface">Budget & Accounts</h2>
+              <h2 className="text-2xl font-bold text-[#191c1e]">Budget & Accounts</h2>
               <div className="flex items-center mt-1">
-                <span className="bg-secondary-fixed text-on-secondary-fixed text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded">Draft</span>
+                <span className="bg-[#d8e2ff] text-[#001a42] text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded">Draft</span>
               </div>
             </div>
             <nav className="hidden md:flex items-center space-x-6 h-full mt-4">
@@ -192,8 +209,8 @@ export default function EventBudgetGenerator() {
                 <button
                   key={t}
                   onClick={() => setDocType(t)}
-                  className={`pb-4 font-semibold text-sm transition-all ${
-                    docType === t ? "text-secondary border-b-2 border-secondary" : "text-on-surface-variant hover:text-on-surface"
+                  className={`pb-4 font-semibold text-sm transition-all cursor-pointer ${
+                    docType === t ? "text-[#0058be] border-b-2 border-[#0058be]" : "text-[#45464d] hover:text-[#191c1e]"
                   }`}
                 >
                   {t}
@@ -203,20 +220,20 @@ export default function EventBudgetGenerator() {
           </div>
           <div className="flex items-center space-x-4">
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-on-surface-variant">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-[#45464d]">
                 <span className="material-symbols-outlined">search</span>
               </span>
-              <input className="bg-surface-container-low border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20 w-64" placeholder="Search records..." type="text" />
+              <input className="bg-[#f2f4f6] border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0058be]/20 w-64" placeholder="Search records..." type="text" />
             </div>
-            <button onClick={handleDownload} className="bg-primary text-on-primary px-4 py-2 rounded text-sm font-semibold flex items-center hover:opacity-80 transition-all cursor-pointer">
+            <button onClick={handleDownload} className="bg-black text-white px-4 py-2 rounded text-sm font-semibold flex items-center hover:opacity-80 transition-all cursor-pointer">
               <span className="material-symbols-outlined mr-2">download</span>
               Generate Excel Report
             </button>
-            <div className="flex space-x-2 border-l border-outline-variant pl-4">
-              <button className="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+            <div className="flex space-x-2 border-l border-[#c6c6cd] pl-4">
+              <button className="p-2 text-[#45464d] hover:bg-[#eceef0] rounded-full transition-colors cursor-pointer">
                 <span className="material-symbols-outlined">notifications</span>
               </button>
-              <div className="w-10 h-10 rounded-full border-2 border-outline overflow-hidden bg-white flex items-center justify-center font-bold text-slate-500">
+              <div className="w-10 h-10 rounded-full border-2 border-[#76777d] overflow-hidden bg-white flex items-center justify-center font-bold text-[#45464d]">
                 VK
               </div>
             </div>
@@ -224,109 +241,191 @@ export default function EventBudgetGenerator() {
         </header>
 
         {/* Canvas */}
-        <main className="flex-1 overflow-y-auto p-margin-page bg-background">
-          <div className="max-w-container-max mx-auto space-y-stack-lg pb-10">
+        <main className="flex-1 overflow-y-auto p-8 bg-[#f7f9fb]">
+          <div className="max-w-[1440px] mx-auto space-y-6 pb-10">
             
             {/* General Info Card */}
-            <section className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)]">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-gutter">
+            <section className="bg-white border border-[#c6c6cd] rounded-lg p-6 shadow-sm">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Network</label>
-                  <input className="w-full bg-surface border border-outline-variant rounded p-3 text-sm focus:outline-none focus:border-secondary transition-all" value={orgName} onChange={(e) => setOrgName(e.target.value)} />
+                  <label className="block text-xs font-semibold text-[#45464d] mb-2">Network</label>
+                  <input className="w-full bg-[#f7f9fb] border border-[#c6c6cd] rounded p-3 text-sm focus:outline-none focus:border-[#0058be] transition-all" value={orgName} onChange={(e) => setOrgName(e.target.value)} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Event Name</label>
-                  <input className="w-full bg-surface border border-outline-variant rounded p-3 text-sm focus:outline-none focus:border-secondary transition-all" value={eventName} onChange={(e) => setEventName(e.target.value)} />
+                  <label className="block text-xs font-semibold text-[#45464d] mb-2">Event Name</label>
+                  <input className="w-full bg-[#f7f9fb] border border-[#c6c6cd] rounded p-3 text-sm focus:outline-none focus:border-[#0058be] transition-all" value={eventName} onChange={(e) => setEventName(e.target.value)} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Date</label>
+                  <label className="block text-xs font-semibold text-[#45464d] mb-2">Date</label>
                   <div className="relative">
-                    <span className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-on-surface-variant">
+                    <span className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#45464d]">
                       <span className="material-symbols-outlined">calendar_today</span>
                     </span>
-                    <input type="date" className="w-full bg-surface border border-outline-variant rounded p-3 text-sm focus:outline-none focus:border-secondary transition-all" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
+                    <input type="date" className="w-full bg-[#f7f9fb] border border-[#c6c6cd] rounded p-3 text-sm focus:outline-none focus:border-[#0058be] transition-all" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-2">Time Slot</label>
+                  <label className="block text-xs font-semibold text-[#45464d] mb-2">Time Slot</label>
                   <div className="relative">
-                    <span className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-on-surface-variant">
+                    <span className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#45464d]">
                       <span className="material-symbols-outlined">schedule</span>
                     </span>
-                    <input className="w-full bg-surface border border-outline-variant rounded p-3 text-sm focus:outline-none focus:border-secondary transition-all" value={eventTime} onChange={(e) => setEventTime(e.target.value)} />
+                    <input className="w-full bg-[#f7f9fb] border border-[#c6c6cd] rounded p-3 text-sm focus:outline-none focus:border-[#0058be] transition-all" value={eventTime} onChange={(e) => setEventTime(e.target.value)} />
                   </div>
                 </div>
               </div>
             </section>
 
             {/* Financials Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               
               {/* Income Section */}
-              <section className="bg-surface-container-lowest border border-outline-variant rounded-lg flex flex-col shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)] overflow-hidden">
-                <div className="flex justify-between items-center px-6 py-4 border-b border-outline-variant bg-surface-container-low">
-                  <h3 className="text-lg font-semibold flex items-center">
-                    <span className="material-symbols-outlined text-on-tertiary-container mr-2" style={{ fontVariationSettings: "'FILL' 1" }}>trending_up</span>
+              <section className="bg-white border border-[#c6c6cd] rounded-lg flex flex-col shadow-sm overflow-hidden">
+                <div className="flex justify-between items-center px-6 py-4 border-b border-[#c6c6cd] bg-[#f2f4f6]">
+                  <h3 className="text-lg font-semibold flex items-center text-[#191c1e]">
+                    <span className="material-symbols-outlined text-[#009668] mr-2" style={{ fontVariationSettings: "'FILL' 1" }}>trending_up</span>
                     Income Items
                   </h3>
                   <div className="text-right">
-                    <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Total Income</p>
-                    <p className="font-mono text-2xl font-bold text-on-tertiary-container">S$ {money(totalIncome)}</p>
+                    <p className="text-[10px] font-bold text-[#45464d] uppercase tracking-tighter">Total Income</p>
+                    <p className="font-mono text-2xl font-bold text-[#009668]">S$ {money(totalIncome)}</p>
                   </div>
                 </div>
                 <div className="p-6">
                   <table className="w-full border-collapse">
                     <thead>
-                      <tr className="border-b border-outline-variant">
-                        <th className="text-left py-3 text-xs font-semibold text-on-surface-variant">Description</th>
-                        <th className="text-center py-3 text-xs font-semibold text-on-surface-variant w-20">Price</th>
-                        <th className="text-center py-3 text-xs font-semibold text-on-surface-variant w-16">Qty</th>
-                        <th className="text-right py-3 text-xs font-semibold text-on-surface-variant w-28">Amount ($)</th>
+                      <tr className="border-b border-[#c6c6cd]">
+                        <th className="text-left py-3 text-xs font-semibold text-[#45464d]">Description</th>
+                        <th className="text-center py-3 text-xs font-semibold text-[#45464d] w-20">Price</th>
+                        <th className="text-center py-3 text-xs font-semibold text-[#45464d] w-16">Qty</th>
+                        <th className="text-right py-3 text-xs font-semibold text-[#45464d] w-28">Amount ($)</th>
                         <th className="w-10"></th>
                       </tr>
                     </thead>
                     <tbody>
-                      {income.map((r) => (
-                        <FinancialRow key={r.id} row={r} color="text-on-surface" onChange={(f, v) => updateRow(setIncome, r.id, f, v)} onRemove={() => removeRow(setIncome, r.id)} />
-                      ))}
+                      {income.map((r) => {
+                        const lineTotal = (parseFloat(r.price) || 0) * (parseFloat(r.qty) || 0);
+                        return (
+                          <tr key={r.id} className="border-b border-[#c6c6cd]/50 group">
+                            <td className="py-3">
+                              <input
+                                className="w-full bg-transparent border-b border-transparent hover:border-[#c6c6cd] focus:outline-none focus:border-[#0058be] py-1 text-sm transition-colors"
+                                placeholder="Description"
+                                value={r.label}
+                                onChange={(e) => updateRow(setIncome, r.id, "label", e.target.value)}
+                              />
+                            </td>
+                            <td className="py-3 px-1">
+                              <input
+                                className="w-full bg-transparent border-b border-transparent hover:border-[#c6c6cd] focus:outline-none focus:border-[#0058be] py-1 text-sm text-center transition-colors"
+                                placeholder="0.00"
+                                value={r.price}
+                                onChange={(e) => updateRow(setIncome, r.id, "price", e.target.value)}
+                              />
+                            </td>
+                            <td className="py-3 px-1">
+                              <input
+                                className="w-full bg-transparent border-b border-transparent hover:border-[#c6c6cd] focus:outline-none focus:border-[#0058be] py-1 text-sm text-center transition-colors"
+                                placeholder="1"
+                                value={r.qty}
+                                onChange={(e) => updateRow(setIncome, r.id, "qty", e.target.value)}
+                              />
+                            </td>
+                            <td className="py-3 text-right">
+                              <span className="font-mono text-sm font-medium text-[#191c1e]">
+                                {money(lineTotal)}
+                              </span>
+                            </td>
+                            <td className="py-3 text-center">
+                              <button
+                                onClick={() => removeRow(setIncome, r.id)}
+                                className="text-[#ba1a1a] opacity-0 group-hover:opacity-100 hover:scale-110 transition-all cursor-pointer"
+                              >
+                                <span className="material-symbols-outlined text-sm">delete</span>
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
-                  <button onClick={() => addRow(setIncome)} className="mt-6 flex items-center text-secondary text-sm font-semibold hover:underline cursor-pointer">
+                  <button onClick={() => addRow(setIncome)} className="mt-6 flex items-center text-[#0058be] text-sm font-semibold hover:underline cursor-pointer">
                     <span className="material-symbols-outlined mr-1">add_circle</span> Add Income Line
                   </button>
                 </div>
               </section>
 
               {/* Expenditure Section */}
-              <section className="bg-surface-container-lowest border border-outline-variant rounded-lg flex flex-col shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)] overflow-hidden">
-                <div className="flex justify-between items-center px-6 py-4 border-b border-outline-variant bg-surface-container-low">
-                  <h3 className="text-lg font-semibold flex items-center">
-                    <span className="material-symbols-outlined text-error mr-2" style={{ fontVariationSettings: "'FILL' 1" }}>trending_down</span>
+              <section className="bg-white border border-[#c6c6cd] rounded-lg flex flex-col shadow-sm overflow-hidden">
+                <div className="flex justify-between items-center px-6 py-4 border-b border-[#c6c6cd] bg-[#f2f4f6]">
+                  <h3 className="text-lg font-semibold flex items-center text-[#191c1e]">
+                    <span className="material-symbols-outlined text-[#ba1a1a] mr-2" style={{ fontVariationSettings: "'FILL' 1" }}>trending_down</span>
                     Expenditure Items
                   </h3>
                   <div className="text-right">
-                    <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Total Expenses</p>
-                    <p className="font-mono text-2xl font-bold text-error">S$ {money(totalExpenditure)}</p>
+                    <p className="text-[10px] font-bold text-[#45464d] uppercase tracking-tighter">Total Expenses</p>
+                    <p className="font-mono text-2xl font-bold text-[#ba1a1a]">S$ {money(totalExpenditure)}</p>
                   </div>
                 </div>
                 <div className="p-6">
                   <table className="w-full border-collapse">
                     <thead>
-                      <tr className="border-b border-outline-variant">
-                        <th className="text-left py-3 text-xs font-semibold text-on-surface-variant">Description</th>
-                        <th className="text-center py-3 text-xs font-semibold text-on-surface-variant w-20">Price</th>
-                        <th className="text-center py-3 text-xs font-semibold text-on-surface-variant w-16">Qty</th>
-                        <th className="text-right py-3 text-xs font-semibold text-on-surface-variant w-28">Amount ($)</th>
+                      <tr className="border-b border-[#c6c6cd]">
+                        <th className="text-left py-3 text-xs font-semibold text-[#45464d]">Description</th>
+                        <th className="text-center py-3 text-xs font-semibold text-[#45464d] w-20">Price</th>
+                        <th className="text-center py-3 text-xs font-semibold text-[#45464d] w-16">Qty</th>
+                        <th className="text-right py-3 text-xs font-semibold text-[#45464d] w-28">Amount ($)</th>
                         <th className="w-10"></th>
                       </tr>
                     </thead>
                     <tbody>
-                      {expenditure.map((r) => (
-                        <FinancialRow key={r.id} row={r} color="text-error" onChange={(f, v) => updateRow(setExpenditure, r.id, f, v)} onRemove={() => removeRow(setExpenditure, r.id)} />
-                      ))}
+                      {expenditure.map((r) => {
+                        const lineTotal = (parseFloat(r.price) || 0) * (parseFloat(r.qty) || 0);
+                        return (
+                          <tr key={r.id} className="border-b border-[#c6c6cd]/50 group">
+                            <td className="py-3">
+                              <input
+                                className="w-full bg-transparent border-b border-transparent hover:border-[#c6c6cd] focus:outline-none focus:border-[#0058be] py-1 text-sm transition-colors"
+                                placeholder="Description"
+                                value={r.label}
+                                onChange={(e) => updateRow(setExpenditure, r.id, "label", e.target.value)}
+                              />
+                            </td>
+                            <td className="py-3 px-1">
+                              <input
+                                className="w-full bg-transparent border-b border-transparent hover:border-[#c6c6cd] focus:outline-none focus:border-[#0058be] py-1 text-sm text-center transition-colors"
+                                placeholder="0.00"
+                                value={r.price}
+                                onChange={(e) => updateRow(setExpenditure, r.id, "price", e.target.value)}
+                              />
+                            </td>
+                            <td className="py-3 px-1">
+                              <input
+                                className="w-full bg-transparent border-b border-transparent hover:border-[#c6c6cd] focus:outline-none focus:border-[#0058be] py-1 text-sm text-center transition-colors"
+                                placeholder="1"
+                                value={r.qty}
+                                onChange={(e) => updateRow(setExpenditure, r.id, "qty", e.target.value)}
+                              />
+                            </td>
+                            <td className="py-3 text-right">
+                              <span className="font-mono text-sm font-medium text-[#ba1a1a]">
+                                {money(lineTotal)}
+                              </span>
+                            </td>
+                            <td className="py-3 text-center">
+                              <button
+                                onClick={() => removeRow(setExpenditure, r.id)}
+                                className="text-[#ba1a1a] opacity-0 group-hover:opacity-100 hover:scale-110 transition-all cursor-pointer"
+                              >
+                                <span className="material-symbols-outlined text-sm">delete</span>
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
-                  <button onClick={() => addRow(setExpenditure)} className="mt-6 flex items-center text-secondary text-sm font-semibold hover:underline cursor-pointer">
+                  <button onClick={() => addRow(setExpenditure)} className="mt-6 flex items-center text-[#0058be] text-sm font-semibold hover:underline cursor-pointer">
                     <span className="material-symbols-outlined mr-1">add_circle</span> Add Expense Line
                   </button>
                 </div>
@@ -334,56 +433,110 @@ export default function EventBudgetGenerator() {
 
             </div>
 
-            {/* Bottom Section: Net Result & Authorizations */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
-              
-              {/* Net Result Card */}
-              <div className="lg:col-span-1 bg-surface-container-lowest border-l-4 border-error border border-outline-variant rounded-lg p-6 flex flex-col justify-between shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)]">
+            {/* Bottom Section: Net Result */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className={`lg:col-span-1 bg-white border-l-4 ${isDeficit ? 'border-[#ba1a1a]' : 'border-[#009668]'} border border-[#c6c6cd] rounded-lg p-6 flex flex-col justify-between shadow-sm`}>
                 <div>
-                  <h4 className="text-xs font-semibold text-on-surface-variant uppercase tracking-widest mb-2">Projected Net Balance</h4>
-                  <p className={`text-3xl font-mono font-bold ${isDeficit ? 'text-error' : 'text-on-tertiary-container'}`}>
+                  <h4 className="text-xs font-semibold text-[#45464d] uppercase tracking-widest mb-2">Projected Net Balance</h4>
+                  <p className={`text-3xl font-mono font-bold ${isDeficit ? 'text-[#ba1a1a]' : 'text-[#009668]'}`}>
                     {isDeficit ? "-S$" : "S$"} {money(Math.abs(net))}
                   </p>
                 </div>
-                <p className="text-sm text-on-surface-variant mt-6 leading-relaxed">
+                <p className="text-sm text-[#45464d] mt-6 leading-relaxed">
                   Note: This event {isDeficit ? `requires a subsidy of $${money(Math.abs(net))} from the main RC fund.` : `yields a surplus of $${money(net)} to be retained in the fund.`}
                 </p>
               </div>
-
             </div>
 
             {/* Preparation & Authorization Card (Full Width) */}
-            <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)] mt-6">
-              <h4 className="text-lg font-semibold mb-6">Preparation & Authorization</h4>
+            <div className="bg-white border border-[#c6c6cd] rounded-lg p-6 shadow-sm mt-6">
+              <h4 className="text-lg font-semibold mb-6 text-[#191c1e]">Preparation & Authorization</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 
-                <SignOffBlock 
-                  title="Prepared By" 
-                  name={preparedName} setName={setPreparedName}
-                  designation={preparedDesignation} setDesignation={setPreparedDesignation}
-                  org={preparedOrg} setOrg={setPreparedOrg}
-                />
-                
-                <SignOffBlock 
-                  title="Approved By" 
-                  name={approverName} setName={setApproverName}
-                  designation={approverDesignation} setDesignation={setApproverDesignation}
-                  org={approverOrg} setOrg={setApproverOrg}
-                />
+                {/* Prepared By Block */}
+                <div className="bg-[#f2f4f6]/40 p-5 rounded-lg border border-[#c6c6cd]/40 flex flex-col h-full">
+                  <h5 className="text-xs font-bold text-[#45464d] uppercase tracking-widest mb-4 border-b border-[#c6c6cd]/30 pb-2">Prepared By</h5>
+                  <div className="space-y-3 mb-6">
+                    <div>
+                      <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Name</label>
+                      <input className="w-full bg-transparent border-b border-[#c6c6cd]/50 hover:border-[#c6c6cd] focus:border-[#0058be] py-1 text-sm font-semibold outline-none transition-colors" value={preparedName} onChange={(e) => setPreparedName(e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Designation</label>
+                      <input className="w-full bg-transparent border-b border-[#c6c6cd]/50 hover:border-[#c6c6cd] focus:border-[#0058be] py-1 text-xs text-[#45464d] outline-none transition-colors" value={preparedDesignation} onChange={(e) => setPreparedDesignation(e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Organization</label>
+                      <input className="w-full bg-transparent border-b border-[#c6c6cd]/50 hover:border-[#c6c6cd] focus:border-[#0058be] py-1 text-xs text-[#45464d] outline-none transition-colors" value={preparedOrg} onChange={(e) => setPreparedOrg(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="mt-auto">
+                    <label className="block text-[10px] font-semibold text-[#45464d] mb-2 uppercase">Digital Signature</label>
+                    <div className="signature-pad w-full h-24 border border-dashed border-[#76777d] rounded flex flex-col items-center justify-center cursor-pointer hover:bg-[#f7f9fb] transition-colors group">
+                      <span className="material-symbols-outlined text-[#45464d] group-hover:scale-110 transition-transform">draw</span>
+                      <p className="text-[#45464d] text-[10px] mt-1 font-bold tracking-wider">TAP TO SIGN</p>
+                    </div>
+                  </div>
+                </div>
 
-                <SignOffBlock 
-                  title="Certified Correct & True Copy by" 
-                  name={directorName} setName={setDirectorName}
-                  designation={directorDesignation} setDesignation={setDirectorDesignation}
-                  org={directorOrg} setOrg={setDirectorOrg}
-                />
+                {/* Approved By Block */}
+                <div className="bg-[#f2f4f6]/40 p-5 rounded-lg border border-[#c6c6cd]/40 flex flex-col h-full">
+                  <h5 className="text-xs font-bold text-[#45464d] uppercase tracking-widest mb-4 border-b border-[#c6c6cd]/30 pb-2">Approved By</h5>
+                  <div className="space-y-3 mb-6">
+                    <div>
+                      <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Name</label>
+                      <input className="w-full bg-transparent border-b border-[#c6c6cd]/50 hover:border-[#c6c6cd] focus:border-[#0058be] py-1 text-sm font-semibold outline-none transition-colors" value={approverName} onChange={(e) => setApproverName(e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Designation</label>
+                      <input className="w-full bg-transparent border-b border-[#c6c6cd]/50 hover:border-[#c6c6cd] focus:border-[#0058be] py-1 text-xs text-[#45464d] outline-none transition-colors" value={approverDesignation} onChange={(e) => setApproverDesignation(e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Organization</label>
+                      <input className="w-full bg-transparent border-b border-[#c6c6cd]/50 hover:border-[#c6c6cd] focus:border-[#0058be] py-1 text-xs text-[#45464d] outline-none transition-colors" value={approverOrg} onChange={(e) => setApproverOrg(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="mt-auto">
+                    <label className="block text-[10px] font-semibold text-[#45464d] mb-2 uppercase">Digital Signature</label>
+                    <div className="signature-pad w-full h-24 border border-dashed border-[#76777d] rounded flex flex-col items-center justify-center cursor-pointer hover:bg-[#f7f9fb] transition-colors group">
+                      <span className="material-symbols-outlined text-[#45464d] group-hover:scale-110 transition-transform">draw</span>
+                      <p className="text-[#45464d] text-[10px] mt-1 font-bold tracking-wider">TAP TO SIGN</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Certified Correct Block */}
+                <div className="bg-[#f2f4f6]/40 p-5 rounded-lg border border-[#c6c6cd]/40 flex flex-col h-full">
+                  <h5 className="text-xs font-bold text-[#45464d] uppercase tracking-widest mb-4 border-b border-[#c6c6cd]/30 pb-2">Certified Correct & True Copy by</h5>
+                  <div className="space-y-3 mb-6">
+                    <div>
+                      <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Name</label>
+                      <input className="w-full bg-transparent border-b border-[#c6c6cd]/50 hover:border-[#c6c6cd] focus:border-[#0058be] py-1 text-sm font-semibold outline-none transition-colors" value={directorName} onChange={(e) => setDirectorName(e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Designation</label>
+                      <input className="w-full bg-transparent border-b border-[#c6c6cd]/50 hover:border-[#c6c6cd] focus:border-[#0058be] py-1 text-xs text-[#45464d] outline-none transition-colors" value={directorDesignation} onChange={(e) => setDirectorDesignation(e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Organization</label>
+                      <input className="w-full bg-transparent border-b border-[#c6c6cd]/50 hover:border-[#c6c6cd] focus:border-[#0058be] py-1 text-xs text-[#45464d] outline-none transition-colors" value={directorOrg} onChange={(e) => setDirectorOrg(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="mt-auto">
+                    <label className="block text-[10px] font-semibold text-[#45464d] mb-2 uppercase">Digital Signature</label>
+                    <div className="signature-pad w-full h-24 border border-dashed border-[#76777d] rounded flex flex-col items-center justify-center cursor-pointer hover:bg-[#f7f9fb] transition-colors group">
+                      <span className="material-symbols-outlined text-[#45464d] group-hover:scale-110 transition-transform">draw</span>
+                      <p className="text-[#45464d] text-[10px] mt-1 font-bold tracking-wider">TAP TO SIGN</p>
+                    </div>
+                  </div>
+                </div>
 
               </div>
             </div>
 
             {/* Footer Disclaimer */}
             <footer className="text-center pt-8">
-              <p className="text-on-surface-variant text-[11px] uppercase tracking-widest opacity-50">
+              <p className="text-[#45464d] text-[11px] uppercase tracking-widest opacity-50">
                 Confidential Document • Internal Use Only • EventFin Pro Cloud v4.2.0
               </p>
             </footer>
@@ -393,102 +546,11 @@ export default function EventBudgetGenerator() {
 
         {/* Floating Action Button */}
         <div className="fixed bottom-10 right-10 flex flex-col items-end space-y-4">
-          <button className="bg-secondary text-on-secondary w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform cursor-pointer" title="Save Draft">
+          <button className="bg-[#0058be] text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform cursor-pointer" title="Save Draft">
             <span className="material-symbols-outlined">save</span>
           </button>
         </div>
 
-      </div>
-    </div>
-  );
-}
-
-// Sidebar Helper Component
-function SidebarLink({ icon, label }) {
-  return (
-    <a className="flex items-center px-6 py-3 text-on-primary-container opacity-70 hover:bg-primary-fixed-variant hover:opacity-100 transition-colors" href="#">
-      <span className="material-symbols-outlined mr-3">{icon}</span>
-      <span className="font-medium">{label}</span>
-    </a>
-  );
-}
-
-// Table Row Helper Component
-function FinancialRow({ row, color, onChange, onRemove }) {
-  const lineTotal = (parseFloat(row.price) || 0) * (parseFloat(row.qty) || 0);
-  
-  return (
-    <tr className="border-b border-outline-variant/50 group">
-      <td className="py-3">
-        <input
-          className="w-full bg-transparent border-b border-transparent hover:border-outline-variant focus:outline-none focus:border-secondary py-1 text-sm transition-colors"
-          placeholder="Description"
-          value={row.label}
-          onChange={(e) => onChange("label", e.target.value)}
-        />
-      </td>
-      <td className="py-3 px-1">
-        <input
-          className="w-full bg-transparent border-b border-transparent hover:border-outline-variant focus:outline-none focus:border-secondary py-1 text-sm text-center transition-colors"
-          placeholder="0.00"
-          value={row.price}
-          onChange={(e) => onChange("price", e.target.value)}
-        />
-      </td>
-      <td className="py-3 px-1">
-        <input
-          className="w-full bg-transparent border-b border-transparent hover:border-outline-variant focus:outline-none focus:border-secondary py-1 text-sm text-center transition-colors"
-          placeholder="1"
-          value={row.qty}
-          onChange={(e) => onChange("qty", e.target.value)}
-        />
-      </td>
-      <td className="py-3 text-right">
-        <span className={`font-mono text-sm font-medium ${color}`}>
-          {money(lineTotal)}
-        </span>
-      </td>
-      <td className="py-3 text-center">
-        <button
-          onClick={onRemove}
-          className="text-error opacity-0 group-hover:opacity-100 hover:scale-110 transition-all cursor-pointer"
-        >
-          <span className="material-symbols-outlined text-sm">delete</span>
-        </button>
-      </td>
-    </tr>
-  );
-}
-
-// Signature Block Helper Component
-function SignOffBlock({ title, name, setName, designation, setDesignation, org, setOrg }) {
-  return (
-    <div className="bg-surface-container-low/40 p-5 rounded-lg border border-outline-variant/40 flex flex-col h-full">
-      <h5 className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4 border-b border-outline-variant/30 pb-2">
-        {title}
-      </h5>
-      
-      <div className="space-y-3 mb-6">
-        <div>
-          <label className="block text-[10px] font-semibold text-on-surface-variant mb-1 uppercase">Name</label>
-          <input className="w-full bg-transparent border-b border-outline-variant/50 hover:border-outline-variant focus:border-secondary py-1 text-sm font-semibold outline-none transition-colors" value={name} onChange={(e) => setName(e.target.value)} placeholder="Full Name" />
-        </div>
-        <div>
-          <label className="block text-[10px] font-semibold text-on-surface-variant mb-1 uppercase">Designation</label>
-          <input className="w-full bg-transparent border-b border-outline-variant/50 hover:border-outline-variant focus:border-secondary py-1 text-xs text-on-surface-variant outline-none transition-colors" value={designation} onChange={(e) => setDesignation(e.target.value)} placeholder="Designation" />
-        </div>
-        <div>
-          <label className="block text-[10px] font-semibold text-on-surface-variant mb-1 uppercase">Organization</label>
-          <input className="w-full bg-transparent border-b border-outline-variant/50 hover:border-outline-variant focus:border-secondary py-1 text-xs text-on-surface-variant outline-none transition-colors" value={org} onChange={(e) => setOrg(e.target.value)} placeholder="Organization" />
-        </div>
-      </div>
-
-      <div className="mt-auto">
-        <label className="block text-[10px] font-semibold text-on-surface-variant mb-2 uppercase">Digital Signature</label>
-        <div className="signature-pad w-full h-24 border border-dashed border-outline rounded flex flex-col items-center justify-center cursor-pointer hover:bg-surface transition-colors group">
-          <span className="material-symbols-outlined text-on-surface-variant group-hover:scale-110 transition-transform">draw</span>
-          <p className="text-on-surface-variant text-[10px] mt-1 font-bold tracking-wider">TAP TO SIGN</p>
-        </div>
       </div>
     </div>
   );
