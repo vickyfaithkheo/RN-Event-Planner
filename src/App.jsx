@@ -40,7 +40,6 @@ const ACCOUNT_DESCRIPTIONS = [
 
 export default function EventBudgetGenerator() {
   const [activeNav, setActiveNav] = useState("Proposed Budget");
-  const [docType, setDocType] = useState("Statement of Accounts");
   const [orgName, setOrgName] = useState("Tampines Greencourt RN");
   const [eventName, setEventName] = useState("Visit to Snail Farm");
   const [eventDate, setEventDate] = useState("2026-03-01");
@@ -55,6 +54,10 @@ export default function EventBudgetGenerator() {
     { id: uid(), label: "Entrance Fee", price: "17.77", qty: "45" },
     { id: uid(), label: "Bus", price: "400", qty: "1" },
   ]);
+
+  // Funding Percentage States for Statement of Accounts
+  const [rnFundingPct, setRnFundingPct] = useState("50");
+  const [necdcFundingPct, setNecdcFundingPct] = useState("50");
 
   // Claim Details state
   const [claims, setClaims] = useState([
@@ -95,6 +98,11 @@ export default function EventBudgetGenerator() {
   const [directorDesignation, setDirectorDesignation] = useState("Constituency Director");
   const [directorOrg, setDirectorOrg] = useState("Tampines Boulevard CO");
 
+  // New Sign-off State for Statement of Accounts
+  const [gcdodName, setGcdodName] = useState("Jason Goh");
+  const [gcdodDesignation, setGcdodDesignation] = useState("Deputy Constituency Director");
+  const [gcdodOrg, setGcdodOrg] = useState("Tampines Boulevard CO");
+
   // Calculations for Budget/Accounts
   const totalIncome = useMemo(
     () => income.reduce((s, r) => s + (parseFloat(r.price) || 0) * (parseFloat(r.qty) || 0), 0),
@@ -106,6 +114,10 @@ export default function EventBudgetGenerator() {
   );
   const net = totalIncome - totalExpenditure;
   const isDeficit = net < 0;
+
+  // Calculated Fund Allocations based on Net Balance
+  const rnAllocatedAmount = net * ((parseFloat(rnFundingPct) || 0) / 100);
+  const necdcAllocatedAmount = net * ((parseFloat(necdcFundingPct) || 0) / 100);
 
   // Calculations for Claims Group Subtotals
   const activityExpensesTotal = useMemo(
@@ -146,7 +158,7 @@ export default function EventBudgetGenerator() {
     const rows = [];
     const push = (arr) => rows.push(arr);
 
-    const activeDocTitle = activeNav === "Proposed Budget" ? "Proposed Budget" : activeNav === "Statement of Accounts" ? docType : "Claim Details";
+    const activeDocTitle = activeNav;
 
     push([activeDocTitle]);
     push([`Event: ${eventName}`]);
@@ -203,10 +215,16 @@ export default function EventBudgetGenerator() {
       push([]);
       
       push([
-        "SURPLUS / (DEFICIT)", "", "", "", "",
+        "NET BALANCE", "", "", "", "",
         { t: "n", f: `F${totalIncomeRow}-F${totalExpRow}` },
       ]);
       
+      if (activeNav === "Statement of Accounts") {
+        push([]);
+        push(["RN Funding Allocation (%)", rnFundingPct + "%", "", "", "NECDC Funding Allocation (%)", necdcFundingPct + "%"]);
+        push(["RN Funded Amount", rnAllocatedAmount, "", "", "NECDC Funded Amount", necdcAllocatedAmount]);
+      }
+
       push([]);
       push([]);
       push(["Prepared by:", "", "", "", "Approved by:"]);
@@ -217,12 +235,12 @@ export default function EventBudgetGenerator() {
       push(["Organization:", preparedOrg, "", "", "Organization:", approverOrg]);
       push([]);
       push([]);
-      push(["Certified Correct & True Copy by:"]);
+      push(["Certified Correct & True Copy by:", "", "", "", "Certified Correct & True Copy by GCDO:"]);
       push([]);
       push([]);
-      push(["Name:", directorName]);
-      push(["Designation:", directorDesignation]);
-      push(["Organization:", directorOrg]);
+      push(["Name:", directorName, "", "", "Name:", gcdodName]);
+      push(["Designation:", directorDesignation, "", "", "Designation:", gcdodDesignation]);
+      push(["Organization:", directorOrg, "", "", "Organization:", gcdodOrg]);
     }
 
     const ws = XLSX.utils.aoa_to_sheet(rows);
@@ -316,29 +334,11 @@ export default function EventBudgetGenerator() {
         <header className="flex justify-between items-center w-full px-8 h-20 border-b border-[#c6c6cd] bg-[#f7f9fb] sticky top-0 z-40 shrink-0">
           <div className="flex items-center space-x-8">
             <div className="flex flex-col">
-              <h2 className="text-2xl font-bold text-[#191c1e]">
-                {activeNav === "Statement of Accounts" ? "Budget & Accounts" : activeNav}
-              </h2>
+              <h2 className="text-2xl font-bold text-[#191c1e]">{activeNav}</h2>
               <div className="flex items-center mt-1">
                 <span className="bg-[#d8e2ff] text-[#001a42] text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded">Draft</span>
               </div>
             </div>
-
-            {activeNav === "Statement of Accounts" && (
-              <nav className="hidden md:flex items-center space-x-6 h-full mt-4">
-                {["Proposed Budget", "Statement of Accounts"].map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setDocType(t)}
-                    className={`pb-4 font-semibold text-sm transition-all cursor-pointer ${
-                      docType === t ? "text-[#0058be] border-b-2 border-[#0058be]" : "text-[#45464d] hover:text-[#191c1e]"
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </nav>
-            )}
           </div>
 
           <div className="flex items-center space-x-4">
@@ -728,23 +728,65 @@ export default function EventBudgetGenerator() {
 
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className={`lg:col-span-1 bg-white border-l-4 ${isDeficit ? 'border-[#ba1a1a]' : 'border-[#009668]'} border border-[#c6c6cd] rounded-lg p-6 flex flex-col justify-between shadow-sm`}>
-                    <div>
-                      <h4 className="text-xs font-semibold text-[#45464d] uppercase tracking-widest mb-2">Projected Net Balance</h4>
-                      <p className={`text-3xl font-mono font-bold ${isDeficit ? 'text-[#ba1a1a]' : 'text-[#009668]'}`}>
-                        {isDeficit ? "-S$" : "S$"} {money(Math.abs(net))}
-                      </p>
+                {/* Bottom Section: Net Balance & Funding Allocations (Extended Box for Statement of Accounts) */}
+                <div className="grid grid-cols-1 gap-6">
+                  <div className={`bg-white border-l-4 ${isDeficit ? 'border-[#ba1a1a]' : 'border-[#009668]'} border border-[#c6c6cd] rounded-lg p-6 shadow-sm`}>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                      
+                      {/* Net Balance Col */}
+                      <div>
+                        <h4 className="text-xs font-semibold text-[#45464d] uppercase tracking-widest mb-2">Net Balance</h4>
+                        <p className={`text-3xl font-mono font-bold ${isDeficit ? 'text-[#ba1a1a]' : 'text-[#009668]'}`}>
+                          {isDeficit ? "-S$" : "S$"} {money(Math.abs(net))}
+                        </p>
+                      </div>
+
+                      {/* RN Funding Col */}
+                      <div className="border-t md:border-t-0 md:border-l border-[#c6c6cd]/50 pt-4 md:pt-0 md:pl-6">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-xs font-bold text-[#45464d] uppercase tracking-wider">RN Funding</label>
+                          <div className="flex items-center space-x-1">
+                            <input 
+                              type="number" 
+                              className="w-16 bg-[#f7f9fb] border border-[#c6c6cd] rounded p-1 text-xs text-right font-mono focus:outline-none focus:border-[#0058be]" 
+                              value={rnFundingPct} 
+                              onChange={(e) => setRnFundingPct(e.target.value)} 
+                            />
+                            <span className="text-xs text-[#45464d]">%</span>
+                          </div>
+                        </div>
+                        <p className="font-mono text-xl font-bold text-[#191c1e]">
+                          {isDeficit ? "-S$" : "S$"} {money(Math.abs(rnAllocatedAmount))}
+                        </p>
+                      </div>
+
+                      {/* NECDC Funding Col */}
+                      <div className="border-t md:border-t-0 md:border-l border-[#c6c6cd]/50 pt-4 md:pt-0 md:pl-6">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="text-xs font-bold text-[#45464d] uppercase tracking-wider">NECDC Funding</label>
+                          <div className="flex items-center space-x-1">
+                            <input 
+                              type="number" 
+                              className="w-16 bg-[#f7f9fb] border border-[#c6c6cd] rounded p-1 text-xs text-right font-mono focus:outline-none focus:border-[#0058be]" 
+                              value={necdcFundingPct} 
+                              onChange={(e) => setNecdcFundingPct(e.target.value)} 
+                            />
+                            <span className="text-xs text-[#45464d]">%</span>
+                          </div>
+                        </div>
+                        <p className="font-mono text-xl font-bold text-[#191c1e]">
+                          {isDeficit ? "-S$" : "S$"} {money(Math.abs(necdcAllocatedAmount))}
+                        </p>
+                      </div>
+
                     </div>
-                    <p className="text-sm text-[#45464d] mt-6 leading-relaxed">
-                      Note: This event {isDeficit ? `requires a subsidy of $${money(Math.abs(net))} from the main RC fund.` : `yields a surplus of $${money(net)} to be retained in the fund.`}
-                    </p>
                   </div>
                 </div>
 
+                {/* Preparation & Authorization Card (Full Width with 4 parties) */}
                 <div className="bg-white border border-[#c6c6cd] rounded-lg p-6 shadow-sm mt-6">
                   <h4 className="text-lg font-semibold mb-6 text-[#191c1e]">Preparation & Authorization</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     
                     {/* Prepared By Block */}
                     <div className="bg-[#f2f4f6]/40 p-5 rounded-lg border border-[#c6c6cd]/40 flex flex-col h-full">
@@ -800,7 +842,7 @@ export default function EventBudgetGenerator() {
 
                     {/* Certified Correct Block */}
                     <div className="bg-[#f2f4f6]/40 p-5 rounded-lg border border-[#c6c6cd]/40 flex flex-col h-full">
-                      <h5 className="text-xs font-bold text-[#45464d] uppercase tracking-widest mb-4 border-b border-[#c6c6cd]/30 pb-2">Certified Correct & True Copy by</h5>
+                      <h5 className="text-xs font-bold text-[#45464d] uppercase tracking-widest mb-4 border-b border-[#c6c6cd]/30 pb-2">Certified Correct</h5>
                       <div className="space-y-3 mb-6">
                         <div>
                           <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Name</label>
@@ -813,6 +855,32 @@ export default function EventBudgetGenerator() {
                         <div>
                           <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Organization</label>
                           <input className="w-full bg-transparent border-b border-[#c6c6cd]/50 hover:border-[#c6c6cd] focus:border-[#0058be] py-1 text-xs text-[#45464d] outline-none transition-colors" value={directorOrg} onChange={(e) => setDirectorOrg(e.target.value)} />
+                        </div>
+                      </div>
+                      <div className="mt-auto">
+                        <label className="block text-[10px] font-semibold text-[#45464d] mb-2 uppercase">Digital Signature</label>
+                        <div className="signature-pad w-full h-24 border border-dashed border-[#76777d] rounded flex flex-col items-center justify-center cursor-pointer hover:bg-[#f7f9fb] transition-colors group">
+                          <span className="material-symbols-outlined text-[#45464d] group-hover:scale-110 transition-transform">draw</span>
+                          <p className="text-[#45464d] text-[10px] mt-1 font-bold tracking-wider">TAP TO SIGN</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Certified Correct by GCDO Block */}
+                    <div className="bg-[#f2f4f6]/40 p-5 rounded-lg border border-[#c6c6cd]/40 flex flex-col h-full">
+                      <h5 className="text-xs font-bold text-[#45464d] uppercase tracking-widest mb-4 border-b border-[#c6c6cd]/30 pb-2">Certified Correct by GCDO</h5>
+                      <div className="space-y-3 mb-6">
+                        <div>
+                          <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Name</label>
+                          <input className="w-full bg-transparent border-b border-[#c6c6cd]/50 hover:border-[#c6c6cd] focus:border-[#0058be] py-1 text-sm font-semibold outline-none transition-colors" value={gcdodName} onChange={(e) => setGcdodName(e.target.value)} />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Designation</label>
+                          <input className="w-full bg-transparent border-b border-[#c6c6cd]/50 hover:border-[#c6c6cd] focus:border-[#0058be] py-1 text-xs text-[#45464d] outline-none transition-colors" value={gcdodDesignation} onChange={(e) => setGcdodDesignation(e.target.value)} />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-semibold text-[#45464d] mb-1 uppercase">Organization</label>
+                          <input className="w-full bg-transparent border-b border-[#c6c6cd]/50 hover:border-[#c6c6cd] focus:border-[#0058be] py-1 text-xs text-[#45464d] outline-none transition-colors" value={gcdodOrg} onChange={(e) => setGcdodOrg(e.target.value)} />
                         </div>
                       </div>
                       <div className="mt-auto">
